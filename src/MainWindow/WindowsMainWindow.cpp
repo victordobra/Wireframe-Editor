@@ -23,7 +23,11 @@
 */
 
 #include "MainWindow/WindowsMainWindow.hpp"
+#include "Vulkan/Device.hpp"
+#include "Vulkan/SwapChain.hpp"
+#include "imgui.hpp"
 #include "Core.hpp"
+#include "ProjectInfo.hpp"
 
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
@@ -31,10 +35,10 @@
 
 // Variables
 wfe::string className = "Application";
-wfe::string appName = "Wireframe Engine";
+wfe::string appName = PROJECT_NAME;
 
-HWND hWnd;
 HINSTANCE hInstance;
+HWND hWnd;
 
 // WndProc predeclaration
 LRESULT CALLBACK WinProc(_In_ HWND hWnd, _In_ UINT message, _In_ WPARAM wParam, _In_ LPARAM lParam);
@@ -42,7 +46,7 @@ LRESULT CALLBACK WinProc(_In_ HWND hWnd, _In_ UINT message, _In_ WPARAM wParam, 
 // Internal helper functions
 static void RegisterApplicationClass() {
     // Create the class info
-    WNDCLASSEX wcex{0};
+    WNDCLASSEX wcex{};
 
     wcex.cbSize        = sizeof(WNDCLASSEX);
     wcex.style         = CS_HREDRAW | CS_VREDRAW;
@@ -52,6 +56,7 @@ static void RegisterApplicationClass() {
     wcex.hInstance     = hInstance;
     wcex.hIcon         = LoadIcon(wcex.hInstance, IDI_APPLICATION);
     wcex.hCursor       = LoadCursor(NULL, IDC_ARROW);
+    wcex.hbrBackground = NULL;
     wcex.lpszMenuName  = NULL;
     wcex.lpszClassName = className.c_str();
     wcex.hIconSm       = LoadIcon(wcex.hInstance, IDI_APPLICATION);
@@ -85,7 +90,6 @@ static void CreateHWnd(wfe::int32_t nCmdShow) {
 }
 
 // Windows functions
-// Windows functions
 int WINAPI WinMain(_In_ HINSTANCE hInst, _In_opt_ HINSTANCE hPrevInst, _In_ LPSTR lpCmdLine, _In_ int nCmdShow) {
     hInstance = hInst;
 
@@ -107,11 +111,19 @@ LRESULT CALLBACK WinProc(_In_ HWND hWindow, _In_ UINT message, _In_ WPARAM wPara
     switch(message) {
     case WM_CREATE: 
         hWnd = hWindow;
+
+        wfe::editor::CreateVulkanDevice();
+        wfe::editor::CreateSwapChain({ wfe::editor::GetMainWindowWidth(), wfe::editor::GetMainWindowHeight() });        
+
         return 0;
     case WM_PAINT: 
         return 0;
     case WM_CLOSE:
+        wfe::editor::DeleteSwapChain();
+        wfe::editor::DeleteVulkanDevice();
+
         wfe::console::CloseLogFile();
+
         DestroyWindow(hWindow);
         return 0;
     case WM_DESTROY:
