@@ -25,7 +25,7 @@
 #include "MainWindow/WindowsMainWindow.hpp"
 #include "Vulkan/Device.hpp"
 #include "Vulkan/SwapChain.hpp"
-#include "imgui.hpp"
+#include "IO/Cursor.hpp"
 #include "Core.hpp"
 #include "ProjectInfo.hpp"
 
@@ -46,7 +46,7 @@ LRESULT CALLBACK WinProc(_In_ HWND hWnd, _In_ UINT message, _In_ WPARAM wParam, 
 // Internal helper functions
 static void RegisterApplicationClass() {
     // Create the class info
-    WNDCLASSEX wcex{};
+    WNDCLASSEX wcex;
 
     wcex.cbSize        = sizeof(WNDCLASSEX);
     wcex.style         = CS_HREDRAW | CS_VREDRAW;
@@ -94,7 +94,6 @@ int WINAPI WinMain(_In_ HINSTANCE hInst, _In_opt_ HINSTANCE hPrevInst, _In_ LPST
     hInstance = hInst;
 
     wfe::console::OpenLogFile();
-
     RegisterApplicationClass();
     CreateHWnd(nCmdShow);
 
@@ -113,10 +112,11 @@ LRESULT CALLBACK WinProc(_In_ HWND hWindow, _In_ UINT message, _In_ WPARAM wPara
         hWnd = hWindow;
 
         wfe::editor::CreateVulkanDevice();
-        wfe::editor::CreateSwapChain({ wfe::editor::GetMainWindowWidth(), wfe::editor::GetMainWindowHeight() });        
+        wfe::editor::CreateSwapChain({ wfe::editor::GetMainWindowWidth(), wfe::editor::GetMainWindowHeight() });
 
         return 0;
     case WM_PAINT: 
+        wfe::editor::UpdateCursorType();
         return 0;
     case WM_CLOSE:
         wfe::editor::DeleteSwapChain();
@@ -139,7 +139,7 @@ LRESULT CALLBACK WinProc(_In_ HWND hWindow, _In_ UINT message, _In_ WPARAM wPara
 // External functions
 wfe::size_t wfe::editor::GetMainWindowWidth() {
     RECT windowRect;
-    BOOL result = GetWindowRect(hWnd, &windowRect);
+    WINBOOL result = GetWindowRect(hWnd, &windowRect);
     if(!result) {
         char_t error[256];
         FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, GetLastError(), MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), error, 256 * sizeof(char_t), NULL);
@@ -150,7 +150,7 @@ wfe::size_t wfe::editor::GetMainWindowWidth() {
 }
 wfe::size_t wfe::editor::GetMainWindowHeight() {
     RECT windowRect;
-    BOOL result = GetWindowRect(hWnd, &windowRect);
+    WINBOOL result = GetWindowRect(hWnd, &windowRect);
     if(!result) {
         char_t error[256];
         FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, GetLastError(), MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), error, 256 * sizeof(char_t), NULL);
@@ -161,7 +161,7 @@ wfe::size_t wfe::editor::GetMainWindowHeight() {
 }
 wfe::ptrdiff_t wfe::editor::GetMainWindowXPos() {
     RECT windowRect;
-    BOOL result = GetWindowRect(hWnd, &windowRect);
+    WINBOOL result = GetWindowRect(hWnd, &windowRect);
     if(!result) {
         char_t error[256];
         FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, GetLastError(), MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), error, 256 * sizeof(char_t), NULL);
@@ -172,7 +172,7 @@ wfe::ptrdiff_t wfe::editor::GetMainWindowXPos() {
 }
 wfe::ptrdiff_t wfe::editor::GetMainWindowYPos() {
     RECT windowRect;
-    BOOL result = GetWindowRect(hWnd, &windowRect);
+    WINBOOL result = GetWindowRect(hWnd, &windowRect);
     if(!result) {
         char_t error[256];
         FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, GetLastError(), MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), error, 256 * sizeof(char_t), NULL);
