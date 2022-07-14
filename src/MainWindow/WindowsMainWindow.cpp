@@ -26,6 +26,8 @@
 #include "Vulkan/Device.hpp"
 #include "Vulkan/SwapChain.hpp"
 #include "IO/Cursor.hpp"
+#include "GUI/GUIPipeline.hpp"
+#include "Config/EditorColors.hpp"
 #include "Core.hpp"
 #include "ProjectInfo.hpp"
 
@@ -33,9 +35,13 @@
 #include <windows.h>
 #include <tchar.h>
 
+// Constants
+const wfe::size_t MIN_WINDOW_WIDTH = 200, MIN_WINDOW_HEIGHT = 200;
+
 // Variables
 wfe::string className = "Application";
 wfe::string appName = PROJECT_NAME;
+wfe::size_t windowWidth, windowHeight;
 
 HINSTANCE hInstance;
 HWND hWnd;
@@ -44,7 +50,18 @@ HWND hWnd;
 LRESULT CALLBACK WinProc(_In_ HWND hWnd, _In_ UINT message, _In_ WPARAM wParam, _In_ LPARAM lParam);
 
 // Internal helper functions
+static COLORREF HexColorToWin32Hex(uint32_t color) {
+    uint8_t red = (color >> 16) & 0xff;
+    uint8_t green = (color >> 8) & 0xff;
+    uint8_t blue = color & 0xff;
+
+    return RGB(red, green, blue);
+}
+
 static void RegisterApplicationClass() {
+    // Load the editor colors
+    wfe::editor::LoadColors();
+
     // Create the class info
     WNDCLASSEX wcex;
 
@@ -54,14 +71,14 @@ static void RegisterApplicationClass() {
     wcex.cbClsExtra    = 0;
     wcex.cbWndExtra    = 0;
     wcex.hInstance     = hInstance;
-    wcex.hIcon         = LoadIcon(wcex.hInstance, IDI_APPLICATION);
+    wcex.hIcon         = LoadIcon(hInstance, IDI_APPLICATION);
     wcex.hCursor       = LoadCursor(NULL, IDC_ARROW);
     wcex.hbrBackground = NULL;
     wcex.lpszMenuName  = NULL;
     wcex.lpszClassName = className.c_str();
-    wcex.hIconSm       = LoadIcon(wcex.hInstance, IDI_APPLICATION);
+    wcex.hIconSm       = LoadIcon(hInstance, IDI_APPLICATION);
 
-    // Throw an error if the class wasn't registered
+    // Try to register the class
     if (!RegisterClassEx(&wcex))
         wfe::console::OutFatalError("Failed to register class!", 1);
 }
@@ -110,15 +127,42 @@ LRESULT CALLBACK WinProc(_In_ HWND hWindow, _In_ UINT message, _In_ WPARAM wPara
     switch(message) {
     case WM_CREATE: 
         hWnd = hWindow;
-
+    
         wfe::editor::CreateVulkanDevice();
         wfe::editor::CreateSwapChain({ wfe::editor::GetMainWindowWidth(), wfe::editor::GetMainWindowHeight() });
+        wfe::editor::CreateGUIPipeline();
 
         return 0;
-    case WM_PAINT: 
+    case WM_GETMINMAXINFO:
+    {
+        MINMAXINFO* minMaxInfo = (MINMAXINFO*)lParam;
+        minMaxInfo->ptMinTrackSize = { MIN_WINDOW_WIDTH, MIN_WINDOW_HEIGHT };
+    }
+
+        return 0;
+    case WM_SIZE:
+        if(wParam == SIZE_MAXIMIZED)
+            wfe::editor::RecreateSwapChain({ (uint32_t)LOWORD(lParam), (uint32_t)HIWORD(lParam) });
+
+        return 0;
+    case WM_ENTERSIZEMOVE:
+        // Save the window dimensions to check at the end if the window was resized
+        windowWidth = wfe::editor::GetMainWindowWidth();
+        windowHeight = wfe::editor::GetMainWindowHeight();
+
+        return 0;
+    case WM_EXITSIZEMOVE:
+        // Check the new window dimensions with the old ones and recreate the window if they are different
+        if(windowWidth != wfe::editor::GetMainWindowWidth() && windowHeight != wfe::editor::GetMainWindowHeight())
+            wfe::editor::RecreateSwapChain({ wfe::editor::GetMainWindowWidth(), wfe::editor::GetMainWindowHeight() });
+
+        return 0;
+    case WM_PAINT:
+        wfe::editor::Draw();
         wfe::editor::UpdateCursorType();
         return 0;
     case WM_CLOSE:
+        wfe::editor::DeleteGUIPipeline();
         wfe::editor::DeleteSwapChain();
         wfe::editor::DeleteVulkanDevice();
 

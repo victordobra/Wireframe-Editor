@@ -27,19 +27,16 @@ namespace wfe::editor {
     // Helper functions
     static VkSurfaceFormatKHR ChooseSwapSurfaceFormat(const vector<VkSurfaceFormatKHR>& availableFormats) {
         for(size_t i = 0; i < availableFormats.size(); i++)
-            if(availableFormats[i].format == VK_FORMAT_B8G8R8A8_SRGB && availableFormats[i].colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR)
+            if(availableFormats[i].format == VK_FORMAT_B8G8R8A8_UNORM && availableFormats[i].colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR)
                 return availableFormats[i];
 
         return availableFormats[0];
     }
     static VkPresentModeKHR ChooseSwapPresentMode(const vector<VkPresentModeKHR>& availablePresentModes) {
         for(size_t i = 0; i < availablePresentModes.size(); i++)
-            if(availablePresentModes[i] == VK_PRESENT_MODE_MAILBOX_KHR) {
-                console::OutMessageFunction("Present mode: Mailbox");
+            if(availablePresentModes[i] == VK_PRESENT_MODE_MAILBOX_KHR)
                 return availablePresentModes[i];
-            }
 
-        console::OutMessageFunction("Present mode: V-Sync");
         return VK_PRESENT_MODE_FIFO_KHR;
     }
     static VkExtent2D ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities) {
@@ -294,6 +291,7 @@ namespace wfe::editor {
         CreateSyncObjects();
     }
     void RecreateSwapChain(VkExtent2D extent) {
+        vkDeviceWaitIdle(GetDevice());
         DeleteSwapChain();
         CreateSwapChain(extent);
     }
