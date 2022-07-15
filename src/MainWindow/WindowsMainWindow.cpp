@@ -41,7 +41,10 @@ const wfe::size_t MIN_WINDOW_WIDTH = 200, MIN_WINDOW_HEIGHT = 200;
 // Variables
 wfe::string className = "Application";
 wfe::string appName = PROJECT_NAME;
+
 wfe::size_t windowWidth, windowHeight;
+wfe::ptrdiff_t windowXPos, windowYPos;
+wfe::bool8_t windowMaximized, windowMinimized;
 
 HINSTANCE hInstance;
 HWND hWnd;
@@ -105,6 +108,20 @@ static void CreateHWnd(wfe::int32_t nCmdShow) {
     ShowWindow(hWnd, nCmdShow);
     UpdateWindow(hWnd);
 }
+static void UpdateWindowInfo() {
+    RECT windowRect;
+    WINBOOL result = GetWindowRect(hWnd, &windowRect);
+    if(!result) {
+        wfe::char_t error[256];
+        FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, GetLastError(), MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), error, 256 * sizeof(wfe::char_t), NULL);
+        wfe::console::OutFatalError((wfe::string)"Failed to obtain window rectangle! Error: " + error, 1);
+    }
+
+    windowWidth = (size_t)(windowRect.right - windowRect.left);
+    windowHeight = (size_t)(windowRect.bottom - windowRect.top);
+    windowXPos = (ptrdiff_t)windowRect.left;
+    windowYPos = (ptrdiff_t)windowRect.top;
+}
 
 // Windows functions
 int WINAPI WinMain(_In_ HINSTANCE hInst, _In_opt_ HINSTANCE hPrevInst, _In_ LPSTR lpCmdLine, _In_ int nCmdShow) {
@@ -128,8 +145,9 @@ LRESULT CALLBACK WinProc(_In_ HWND hWindow, _In_ UINT message, _In_ WPARAM wPara
     case WM_CREATE: 
         hWnd = hWindow;
     
+        UpdateWindowInfo();
         wfe::editor::CreateVulkanDevice();
-        wfe::editor::CreateSwapChain({ wfe::editor::GetMainWindowWidth(), wfe::editor::GetMainWindowHeight() });
+        wfe::editor::CreateSwapChain({ (uint32_t)windowWidth, (uint32_t)windowHeight });
         wfe::editor::CreateGUIPipeline();
 
         return 0;
@@ -141,23 +159,52 @@ LRESULT CALLBACK WinProc(_In_ HWND hWindow, _In_ UINT message, _In_ WPARAM wPara
 
         return 0;
     case WM_SIZE:
-        if(wParam == SIZE_MAXIMIZED)
-            wfe::editor::RecreateSwapChain({ (uint32_t)LOWORD(lParam), (uint32_t)HIWORD(lParam) });
+        switch (wParam) {
+        case SIZE_MINIMIZED:
+            windowMaximized = false;
+            windowMinimized = true;
 
-        return 0;
-    case WM_ENTERSIZEMOVE:
-        // Save the window dimensions to check at the end if the window was resized
-        windowWidth = wfe::editor::GetMainWindowWidth();
-        windowHeight = wfe::editor::GetMainWindowHeight();
+            break;
+        case SIZE_MAXIMIZED:
+            windowXPos = 0;
+            windowYPos = 0;
+            windowWidth = (size_t)LOWORD(lParam);
+            windowHeight = (size_t)HIWORD(lParam);
+            windowMaximized = true;
+            windowMinimized = false;
+
+            wfe::editor::RecreateSwapChain({ windowWidth, windowHeight });
+
+            break;
+        case SIZE_RESTORED:
+            if(windowMaximized || windowMinimized) {
+                windowMaximized = false;
+                windowMinimized = false;
+                UpdateWindowInfo();
+
+                wfe::editor::RecreateSwapChain({ windowWidth, windowHeight });
+            }
+            break;
+        }
 
         return 0;
     case WM_EXITSIZEMOVE:
+    {
+        size_t oldWindowWidth = windowWidth;
+        size_t oldWIndowHeight = windowHeight;
+
+        UpdateWindowInfo();
+
         // Check the new window dimensions with the old ones and recreate the window if they are different
-        if(windowWidth != wfe::editor::GetMainWindowWidth() && windowHeight != wfe::editor::GetMainWindowHeight())
-            wfe::editor::RecreateSwapChain({ wfe::editor::GetMainWindowWidth(), wfe::editor::GetMainWindowHeight() });
+        if(windowWidth != oldWindowWidth || windowHeight != oldWIndowHeight)
+            wfe::editor::RecreateSwapChain({ (uint32_t)windowWidth, (uint32_t)windowHeight });
+    }
 
         return 0;
     case WM_PAINT:
+        if(windowMinimized)
+            return 0;
+
         wfe::editor::Draw();
         wfe::editor::UpdateCursorType();
         return 0;
@@ -182,48 +229,16 @@ LRESULT CALLBACK WinProc(_In_ HWND hWindow, _In_ UINT message, _In_ WPARAM wPara
 
 // External functions
 wfe::size_t wfe::editor::GetMainWindowWidth() {
-    RECT windowRect;
-    WINBOOL result = GetWindowRect(hWnd, &windowRect);
-    if(!result) {
-        char_t error[256];
-        FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, GetLastError(), MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), error, 256 * sizeof(char_t), NULL);
-        console::OutFatalError((string)"Failed to obtain window rectangle! Error: " + error, 1);
-    }
-
-    return (size_t)(windowRect.right - windowRect.left);
+    return windowWidth;
 }
 wfe::size_t wfe::editor::GetMainWindowHeight() {
-    RECT windowRect;
-    WINBOOL result = GetWindowRect(hWnd, &windowRect);
-    if(!result) {
-        char_t error[256];
-        FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, GetLastError(), MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), error, 256 * sizeof(char_t), NULL);
-        console::OutFatalError((string)"Failed to obtain window rectangle! Error: " + error, 1);
-    }
-
-    return (size_t)(windowRect.bottom - windowRect.top);
+    return windowHeight;
 }
 wfe::ptrdiff_t wfe::editor::GetMainWindowXPos() {
-    RECT windowRect;
-    WINBOOL result = GetWindowRect(hWnd, &windowRect);
-    if(!result) {
-        char_t error[256];
-        FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, GetLastError(), MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), error, 256 * sizeof(char_t), NULL);
-        console::OutFatalError((string)"Failed to obtain window rectangle! Error: " + error, 1);
-    }
-
-    return (ptrdiff_t)windowRect.left;
+    return windowXPos;
 }
 wfe::ptrdiff_t wfe::editor::GetMainWindowYPos() {
-    RECT windowRect;
-    WINBOOL result = GetWindowRect(hWnd, &windowRect);
-    if(!result) {
-        char_t error[256];
-        FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, GetLastError(), MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), error, 256 * sizeof(char_t), NULL);
-        console::OutFatalError((string)"Failed to obtain window rectangle! Error: " + error, 1);
-    }
-
-    return (ptrdiff_t)windowRect.top;
+    return windowYPos;
 }
 
 wfe::string wfe::editor::GetMainWindowName() {
