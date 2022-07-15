@@ -37,6 +37,7 @@
 
 // Constants
 const wfe::size_t MIN_WINDOW_WIDTH = 200, MIN_WINDOW_HEIGHT = 200;
+const wfe::size_t MAX_ERROR_LENGTH = 256;
 
 // Variables
 wfe::string className = "Application";
@@ -82,8 +83,11 @@ static void RegisterApplicationClass() {
     wcex.hIconSm       = LoadIcon(hInstance, IDI_APPLICATION);
 
     // Try to register the class
-    if (!RegisterClassEx(&wcex))
-        wfe::console::OutFatalError("Failed to register class!", 1);
+    if(!RegisterClassEx(&wcex)) {
+        wfe::char_t error[MAX_ERROR_LENGTH];
+        FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, GetLastError(), MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), error, 256 * sizeof(wfe::char_t), NULL);
+        wfe::console::OutFatalError((wfe::string)"Failed to register class! Error: " + error, 1);
+    }
 }
 static void CreateHWnd(wfe::int32_t nCmdShow) {
     // Create the window
@@ -101,8 +105,11 @@ static void CreateHWnd(wfe::int32_t nCmdShow) {
     );
 
     // Throw an error if the window wasn't created
-    if (!hWnd)
-        wfe::console::OutFatalError("Failed to create window!", 1);
+    if(!hWnd) {
+        wfe::char_t error[MAX_ERROR_LENGTH];
+        FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, GetLastError(), MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), error, 256 * sizeof(wfe::char_t), NULL);
+        wfe::console::OutFatalError((wfe::string)"Failed to create window! Error: " + error, 1);
+    }
 
     // Show and update the window
     ShowWindow(hWnd, nCmdShow);
@@ -112,7 +119,7 @@ static void UpdateWindowInfo() {
     RECT windowRect;
     WINBOOL result = GetWindowRect(hWnd, &windowRect);
     if(!result) {
-        wfe::char_t error[256];
+        wfe::char_t error[MAX_ERROR_LENGTH];
         FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, GetLastError(), MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), error, 256 * sizeof(wfe::char_t), NULL);
         wfe::console::OutFatalError((wfe::string)"Failed to obtain window rectangle! Error: " + error, 1);
     }
@@ -161,11 +168,28 @@ LRESULT CALLBACK WinProc(_In_ HWND hWindow, _In_ UINT message, _In_ WPARAM wPara
     case WM_SIZE:
         switch (wParam) {
         case SIZE_MINIMIZED:
+        {
             windowMaximized = false;
             windowMinimized = true;
 
+            WINBOOL result = ValidateRect(hWnd, NULL);
+            if(!result) {
+                wfe::char_t error[MAX_ERROR_LENGTH];
+                FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, GetLastError(), MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), error, 256 * sizeof(wfe::char_t), NULL);
+                wfe::console::OutFatalError((wfe::string)"Failed to validate the window! Error: " + error, 1);
+            }
+        }
             break;
         case SIZE_MAXIMIZED:
+            if(windowMinimized) {
+                WINBOOL result = InvalidateRect(hWnd, NULL, FALSE);
+                if(!result) {
+                    wfe::char_t error[MAX_ERROR_LENGTH];
+                    FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, GetLastError(), MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), error, 256 * sizeof(wfe::char_t), NULL);
+                    wfe::console::OutFatalError((wfe::string)"Failed to invalidate the window! Error: " + error, 1);
+                }
+            }
+
             windowXPos = 0;
             windowYPos = 0;
             windowWidth = (size_t)LOWORD(lParam);
@@ -177,6 +201,14 @@ LRESULT CALLBACK WinProc(_In_ HWND hWindow, _In_ UINT message, _In_ WPARAM wPara
 
             break;
         case SIZE_RESTORED:
+            if(windowMinimized) {
+                WINBOOL result = InvalidateRect(hWnd, NULL, FALSE);
+                if(!result) {
+                    wfe::char_t error[MAX_ERROR_LENGTH];
+                    FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, GetLastError(), MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), error, 256 * sizeof(wfe::char_t), NULL);
+                    wfe::console::OutFatalError((wfe::string)"Failed to invalidate the window! Error: " + error, 1);
+                }
+            }
             if(windowMaximized || windowMinimized) {
                 windowMaximized = false;
                 windowMinimized = false;
@@ -199,12 +231,8 @@ LRESULT CALLBACK WinProc(_In_ HWND hWindow, _In_ UINT message, _In_ WPARAM wPara
         if(windowWidth != oldWindowWidth || windowHeight != oldWIndowHeight)
             wfe::editor::RecreateSwapChain({ (uint32_t)windowWidth, (uint32_t)windowHeight });
     }
-
         return 0;
     case WM_PAINT:
-        if(windowMinimized)
-            return 0;
-
         wfe::editor::Draw();
         wfe::editor::UpdateCursorType();
         return 0;
