@@ -27,6 +27,7 @@
 #include "Vulkan/SwapChain.hpp"
 #include "IO/Cursor.hpp"
 #include "GUI/GUIPipeline.hpp"
+#include "GUI/Window.hpp"
 #include "Config/EditorColors.hpp"
 #include "Core.hpp"
 #include "ProjectInfo.hpp"
@@ -49,6 +50,9 @@ wfe::bool8_t windowMaximized, windowMinimized;
 
 HINSTANCE hInstance;
 HWND hWnd;
+
+// Testing variables
+wfe::editor::Window* window;
 
 // WndProc predeclaration
 LRESULT CALLBACK WinProc(_In_ HWND hWnd, _In_ UINT message, _In_ WPARAM wParam, _In_ LPARAM lParam);
@@ -156,6 +160,7 @@ LRESULT CALLBACK WinProc(_In_ HWND hWindow, _In_ UINT message, _In_ WPARAM wPara
         wfe::editor::CreateVulkanDevice();
         wfe::editor::CreateSwapChain({ (uint32_t)windowWidth, (uint32_t)windowHeight });
         wfe::editor::CreateGUIPipeline();
+        window = new wfe::editor::Window();
 
         return 0;
     case WM_GETMINMAXINFO:
@@ -237,6 +242,13 @@ LRESULT CALLBACK WinProc(_In_ HWND hWindow, _In_ UINT message, _In_ WPARAM wPara
         wfe::editor::UpdateCursorType();
         return 0;
     case WM_CLOSE:
+        // Delete every window
+    {
+        auto windows = wfe::editor::Window::GetWindows();
+        for(auto* window : windows)
+            delete window;
+    }
+        
         wfe::editor::DeleteGUIPipeline();
         wfe::editor::DeleteSwapChain();
         wfe::editor::DeleteVulkanDevice();

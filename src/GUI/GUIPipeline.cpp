@@ -1,4 +1,6 @@
 #include "GUI/GUIPipeline.hpp"
+#include "GUI/GUIRenderInfo.hpp"
+#include "GUI/Window.hpp"
 #include "Vulkan/Device.hpp"
 #include "Vulkan/SwapChain.hpp"
 #include "Config/EditorColors.hpp"
@@ -6,6 +8,9 @@
 
 namespace wfe::editor {
     // Variables
+    VkVertexInputBindingDescription vertexBinding;
+    vector<VkVertexInputAttributeDescription> vertexAttributes;
+
     VkPipelineViewportStateCreateInfo viewportInfo;
     VkPipelineVertexInputStateCreateInfo vertexInputInfo;
     VkPipelineInputAssemblyStateCreateInfo inputAssemblyInfo;
@@ -50,6 +55,16 @@ namespace wfe::editor {
     }
 
     static void SetPipelineInfo() {
+        // Vertex binding and attributes
+        vertexBinding.binding = 0;
+        vertexBinding.stride = sizeof(GUIVertex);
+        vertexBinding.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+
+        vertexAttributes.resize(3);
+        vertexAttributes[0] = { 0, 0, VK_FORMAT_R32G32_SFLOAT, offsetof(GUIVertex, position) };
+        vertexAttributes[1] = { 1, 0, VK_FORMAT_R32G32_SFLOAT, offsetof(GUIVertex, uvCoord) };
+        vertexAttributes[2] = { 2, 0, VK_FORMAT_R32G32B32A32_SFLOAT, offsetof(GUIVertex, color) };
+
         // Viewport info
 		viewportInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
 		viewportInfo.viewportCount = 1;
@@ -61,10 +76,10 @@ namespace wfe::editor {
 
 		// Vertex input info
 		vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-		vertexInputInfo.vertexAttributeDescriptionCount = 0;
-		vertexInputInfo.vertexBindingDescriptionCount = 0;
-		vertexInputInfo.pVertexAttributeDescriptions = nullptr;
-		vertexInputInfo.pVertexBindingDescriptions = nullptr;
+		vertexInputInfo.vertexAttributeDescriptionCount = (uint32_t)vertexAttributes.size();
+        vertexInputInfo.pVertexAttributeDescriptions = vertexAttributes.data();
+		vertexInputInfo.vertexBindingDescriptionCount = 1;
+		vertexInputInfo.pVertexBindingDescriptions = &vertexBinding;
 		vertexInputInfo.flags = 0;
 		vertexInputInfo.pNext = nullptr;
 
@@ -151,13 +166,18 @@ namespace wfe::editor {
         // Set the pipeline layout info
         VkPipelineLayoutCreateInfo createInfo;
 
+        VkPushConstantRange pushConstantRange;
+        pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+        pushConstantRange.offset = 0;
+        pushConstantRange.size = sizeof(GUIPushConstants);
+
         createInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
         createInfo.pNext = nullptr;
         createInfo.flags = 0;
         createInfo.setLayoutCount = 0;
         createInfo.pSetLayouts = nullptr;
-        createInfo.pushConstantRangeCount = 0;
-        createInfo.pPushConstantRanges = nullptr;
+        createInfo.pushConstantRangeCount = 1;
+        createInfo.pPushConstantRanges = &pushConstantRange;
 
         // Create the pipeline layout
         auto result = vkCreatePipelineLayout(GetDevice(), &createInfo, nullptr, &layout);
@@ -310,8 +330,18 @@ namespace wfe::editor {
         vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
         vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 
-        // Draw the square
-        vkCmdDraw(commandBuffer, 6, 1, 0, 0);
+        // Push the constants
+        GUIPushConstants pushConstants;
+        pushConstants.scale[0] = 2.f / windowWidth;
+        pushConstants.scale[1] = 2.f / windowHeight;
+
+        vkCmdPushConstants(commandBuffer, layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(GUIPushConstants), &pushConstants);
+
+        // Draw every window
+        for(auto* window : Window::GetWindows()) {
+            window->Bind(commandBuffer);
+            window->Draw(commandBuffer);
+        }
 
         // End the render pass
         vkCmdEndRenderPass(commandBuffer);
