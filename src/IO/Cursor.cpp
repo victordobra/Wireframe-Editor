@@ -6,10 +6,19 @@
 #endif
 
 namespace wfe::editor {
+    bool8_t cursorDown = false, cursorPressed = false, cursorReleased = false;
+    CursorType cursorType = CURSOR_TYPE_DEFAULT;
+
     // OS specific functions
 #ifdef PLATFORM_WINDOWS
-    CursorType cursorType = CURSOR_TYPE_DEFAULT;
     HCURSOR cursor = nullptr;
+
+    void UpdateInput() {
+        bool8_t newCursorDown = GetAsyncKeyState(VK_LBUTTON) >> 15;
+        cursorPressed = !cursorDown && newCursorDown;
+        cursorReleased = cursorDown && !newCursorDown;
+        cursorDown = newCursorDown;
+    }
 
     CursorPos GetCursorPos() {
         POINT cursorPoint;
@@ -75,8 +84,14 @@ namespace wfe::editor {
         }
     }
 
+    bool8_t CursorDown() {
+        return cursorDown;
+    }
     bool8_t CursorPressed() {
-        return GetAsyncKeyState(VK_LBUTTON) >> 15;
+        return cursorPressed;
+    }
+    bool8_t CursorReleased() {
+        return cursorReleased;
     }
 
     void UpdateCursorType() {

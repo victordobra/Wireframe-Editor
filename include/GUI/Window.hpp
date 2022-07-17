@@ -14,6 +14,9 @@ namespace wfe::editor {
             vector<uint32_t> indices;
         };
 
+        size_t windowWidth = 200, windowHeight = 200;
+        ptrdiff_t windowXPos = 100, windowYPos = 100;
+
         Window();
         Window(const Window&) = delete;
         Window(Window&&) noexcept = delete;
@@ -34,11 +37,9 @@ namespace wfe::editor {
 
         static vector<Window*> windows;
 
-        size_t windowWidth = 200, windowHeight = 200;
-        ptrdiff_t windowXPos = 100, windowYPos = 100;
-
         ptrdiff_t cursorPrevX = 0, cursorPrevY = 0;
-        bool8_t windowDragged = false;
+        bool8_t windowDrag = false;
+        bool8_t windowCanResizeN = false, windowCanResizeS = false, windowCanResizeW = false, windowCanResizeE = false;
         bool8_t windowResizeN = false, windowResizeS = false, windowResizeW = false, windowResizeE = false;
 
         VkBuffer vertexBuffer = NULL;

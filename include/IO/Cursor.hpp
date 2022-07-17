@@ -21,6 +21,9 @@ namespace wfe::editor {
         ptrdiff_t x, y;
     };
 
+    /// @brief Updates the input data. Internal use only.
+    void UpdateInput();
+
     /// @brief Returns the cursor's position relative to the main window.
     /// @return The cursor's position.
     CursorPos GetCursorPos();
@@ -35,8 +38,12 @@ namespace wfe::editor {
     /// @param newPos The cursor's new position.
     void SetCursorScreenPos(CursorPos newPos);
 
+    /// @brief Returns if the cursor left button is down.
+    bool8_t CursorDown();
     /// @brief Returns if the cursor left button is pressed.
     bool8_t CursorPressed();
+    /// @brief Returns if the cursor left button is released.
+    bool8_t CursorReleased();
 
     /// @brief Returns the cursor's type.
     CursorType GetCursorType();

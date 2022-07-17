@@ -119,66 +119,83 @@ namespace wfe::editor {
         ptrdiff_t movementX = cursorPos.x - cursorPrevX;
         ptrdiff_t movementY = cursorPos.y - cursorPrevY;
 
-        if(windowDragged) {
+        if(windowDrag) {
             // Move the window
             windowXPos += movementX;
             windowYPos += movementY;
         }
         // Resize the window based on the resize types
-        if(CursorPressed()) {
-            if(windowResizeN) {
-                windowYPos += movementY;
-                windowHeight -= movementY;
-            }
-            if(windowResizeS) {
-                windowHeight += movementY;
-            }
+        if(windowResizeN) {
+            windowYPos += movementY;
+            windowHeight -= movementY;
+        }
+        if(windowResizeS) {
+            windowHeight += movementY;
+        }
 
-            if(windowResizeW) {
-                windowXPos += movementX;
-                windowWidth -= movementX;
-            }
-            if(windowResizeE) {
-                windowWidth += movementX;
-            }
+        if(windowResizeW) {
+            windowXPos += movementX;
+            windowWidth -= movementX;
+        }
+        if(windowResizeE) {
+            windowWidth += movementX;
         }
         
         // Set the cursor type based on resize modes
-        if((windowResizeN && windowResizeE) || (windowResizeS && windowResizeW))
+        if((windowCanResizeN && windowCanResizeE) || (windowCanResizeS && windowCanResizeW))
             SetCursorType(CURSOR_TYPE_SIZE_DIAGONAL_RIGHT);
-        else if((windowResizeN && windowResizeW) || (windowResizeS && windowResizeE))
+        else if((windowCanResizeN && windowCanResizeW) || (windowCanResizeS && windowCanResizeE))
             SetCursorType(CURSOR_TYPE_SIZE_DIAGONAL_LEFT);
-        else if(windowResizeN || windowResizeS)
+        else if(windowCanResizeN || windowCanResizeS)
             SetCursorType(CURSOR_TYPE_SIZE_UPDOWN);
-        else if(windowResizeW || windowResizeE)
+        else if(windowCanResizeW || windowCanResizeE)
             SetCursorType(CURSOR_TYPE_SIZE_LEFTRIGHT);
         else 
             SetCursorType(CURSOR_TYPE_DEFAULT);
 
         // Check if the window should be dragged
-        windowDragged = CursorPressed() && 
-                        cursorPos.x >= windowXPos && 
-                        cursorPos.x <= windowXPos + 98 && 
-                        cursorPos.y >= windowYPos && 
-                        cursorPos.y <= windowYPos + 18;
+        if(CursorPressed() && 
+           cursorPos.x >= windowXPos && 
+           cursorPos.x <= windowXPos + 98 && 
+           cursorPos.y >= windowYPos && 
+           cursorPos.y <= windowYPos + 18)
+            windowDrag = true;
 
         // Check the window resize flags for every dimension
-        windowResizeN = cursorPos.x >= windowXPos && 
-                        cursorPos.x <= windowXPos + windowWidth && 
-                        cursorPos.y >= windowYPos + 20 && 
-                        cursorPos.y <= windowYPos + 20 + RESIZE_MARGIN;
-        windowResizeS = cursorPos.x >= windowXPos && 
-                        cursorPos.x <= windowXPos + windowWidth && 
-                        cursorPos.y >= windowYPos + windowHeight - RESIZE_MARGIN && 
-                        cursorPos.y <= windowYPos + windowHeight;
-        windowResizeW = cursorPos.x >= windowXPos && 
-                        cursorPos.x <= windowXPos + RESIZE_MARGIN && 
-                        cursorPos.y >= windowYPos && 
-                        cursorPos.y <= windowYPos + windowHeight;
-        windowResizeE = cursorPos.x >= windowXPos + windowWidth - RESIZE_MARGIN && 
-                        cursorPos.x <= windowXPos + windowWidth && 
-                        cursorPos.y >= windowYPos && 
-                        cursorPos.y <= windowYPos + windowHeight;
+        windowCanResizeN = cursorPos.x >= windowXPos && 
+                           cursorPos.x <= windowXPos + windowWidth && 
+                           cursorPos.y >= windowYPos + 20 && 
+                           cursorPos.y <= windowYPos + 20 + RESIZE_MARGIN;
+        windowCanResizeS = cursorPos.x >= windowXPos && 
+                           cursorPos.x <= windowXPos + windowWidth && 
+                           cursorPos.y >= windowYPos + windowHeight - RESIZE_MARGIN && 
+                           cursorPos.y <= windowYPos + windowHeight;
+        windowCanResizeW = cursorPos.x >= windowXPos && 
+                           cursorPos.x <= windowXPos + RESIZE_MARGIN && 
+                           cursorPos.y >= windowYPos && 
+                           cursorPos.y <= windowYPos + windowHeight;
+        windowCanResizeE = cursorPos.x >= windowXPos + windowWidth - RESIZE_MARGIN && 
+                           cursorPos.x <= windowXPos + windowWidth && 
+                           cursorPos.y >= windowYPos && 
+                           cursorPos.y <= windowYPos + windowHeight;
+        
+        if(CursorPressed() && windowCanResizeN)
+            windowResizeN = true;
+        if(CursorPressed() && windowCanResizeS)
+            windowResizeS = true;
+        if(CursorPressed() && windowCanResizeW)
+            windowResizeW = true;
+        if(CursorPressed() && windowCanResizeE)
+            windowResizeE = true;
+
+        // Reset every drag/resize state if the cursor is released
+        if(!CursorDown()) {
+            windowDrag = false;
+            windowResizeN = false;
+            windowResizeS = false;
+            windowResizeW = false;
+            windowResizeE = false;
+        }
         
         // Set the new cursor coords
         cursorPrevX = cursorPos.x;

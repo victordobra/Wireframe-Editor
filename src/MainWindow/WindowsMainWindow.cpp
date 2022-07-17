@@ -51,9 +51,6 @@ wfe::bool8_t windowMaximized, windowMinimized;
 HINSTANCE hInstance;
 HWND hWnd;
 
-// Testing variables
-wfe::editor::Window* window;
-
 // WndProc predeclaration
 LRESULT CALLBACK WinProc(_In_ HWND hWnd, _In_ UINT message, _In_ WPARAM wParam, _In_ LPARAM lParam);
 
@@ -160,7 +157,10 @@ LRESULT CALLBACK WinProc(_In_ HWND hWindow, _In_ UINT message, _In_ WPARAM wPara
         wfe::editor::CreateVulkanDevice();
         wfe::editor::CreateSwapChain({ (uint32_t)windowWidth, (uint32_t)windowHeight });
         wfe::editor::CreateGUIPipeline();
-        window = new wfe::editor::Window();
+
+    {
+        wfe::editor::Window* window = new wfe::editor::Window();
+    }
 
         return 0;
     case WM_GETMINMAXINFO:
@@ -242,6 +242,7 @@ LRESULT CALLBACK WinProc(_In_ HWND hWindow, _In_ UINT message, _In_ WPARAM wPara
 
         return 0;
     case WM_PAINT:
+        wfe::editor::UpdateInput();
         wfe::editor::Draw();
         wfe::editor::UpdateCursorType();
         return 0;
