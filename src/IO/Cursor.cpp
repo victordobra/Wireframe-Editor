@@ -21,6 +21,14 @@ namespace wfe::editor {
             console::OutFatalError((string)"Failed to obtain cursor position! Error: " + error, 1);
         }
 
+        result = ScreenToClient(GetMainWindowHandle(), &cursorPoint);
+
+        if(!result) {
+            char_t error[256];
+            FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, GetLastError(), MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), error, 256 * sizeof(char_t), NULL);
+            console::OutFatalError((string)"Failed to convert from screen pos to client pos! Error: " + error, 1);
+        }
+
         CursorPos cursorPos{ (ptrdiff_t)cursorPoint.x, (ptrdiff_t)cursorPoint.y };
         return cursorPos;
     }
@@ -34,36 +42,19 @@ namespace wfe::editor {
             console::OutFatalError((string)"Failed to obtain cursor position! Error: " + error, 1);
         }
 
-        result = ClientToScreen(GetMainWindowHandle(), &cursorPoint);
-
-        if(!result) {
-            char_t error[256];
-            FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, GetLastError(), MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), error, 256 * sizeof(char_t), NULL);
-            console::OutFatalError((string)"Failed to convert from client pos to world pos! Error: " + error, 1);
-        }
-
         CursorPos cursorPos{ (ptrdiff_t)cursorPoint.x, (ptrdiff_t)cursorPoint.y };
         return cursorPos;
     }
 
     void SetCursorPos(CursorPos newPos) {
-        WINBOOL result = ::SetCursorPos((int32_t)newPos.x, (int32_t)newPos.y);
-
-        if(!result) {
-            char_t error[256];
-            FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, GetLastError(), MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), error, 256 * sizeof(char_t), NULL);
-            console::OutFatalError((string)"Failed to set cursor position! Error: " + error, 1);
-        }
-    }
-    void SetCursorScreenPos(CursorPos newPos) {
         POINT cursorPoint{ (int32_t)newPos.x, (int32_t)newPos.y };
 
-        WINBOOL result = ScreenToClient(GetMainWindowHandle(), &cursorPoint);
+        WINBOOL result = ClientToScreen(GetMainWindowHandle(), &cursorPoint);
 
         if(!result) {
             char_t error[256];
             FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, GetLastError(), MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), error, 256 * sizeof(char_t), NULL);
-            console::OutFatalError((string)"Failed to convert from screen pos to client pos! Error: " + error, 1);
+            console::OutFatalError((string)"Failed to convert from client pos to screen pos! Error: " + error, 1);
         }
 
         result = ::SetCursorPos(cursorPoint.x, cursorPoint.y);
@@ -73,6 +64,19 @@ namespace wfe::editor {
             FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, GetLastError(), MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), error, 256 * sizeof(char_t), NULL);
             console::OutFatalError((string)"Failed to set cursor position! Error: " + error, 1);
         }
+    }
+    void SetCursorScreenPos(CursorPos newPos) {
+        WINBOOL result = ::SetCursorPos((int32_t)newPos.x, (int32_t)newPos.y);
+
+        if(!result) {
+            char_t error[256];
+            FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, GetLastError(), MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), error, 256 * sizeof(char_t), NULL);
+            console::OutFatalError((string)"Failed to set cursor position! Error: " + error, 1);
+        }
+    }
+
+    bool8_t CursorPressed() {
+        return GetAsyncKeyState(VK_LBUTTON) >> 15;
     }
 
     void UpdateCursorType() {

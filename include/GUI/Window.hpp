@@ -32,7 +32,10 @@ namespace wfe::editor {
 
         static vector<Window*> windows;
 
-        size_t windowWidth = 200, windowHeight = 200, windowXPos = 100, windowYPos = 100;
+        size_t windowWidth = 200, windowHeight = 200;
+        ptrdiff_t windowXPos = 100, windowYPos = 100;
+        ptrdiff_t cursorPrevX = 0, cursorPrevY = 0;
+        bool8_t windowDragged = false;
 
         VkBuffer vertexBuffer = NULL;
         VkDeviceMemory vertexMemory = NULL;

@@ -35,6 +35,9 @@ namespace wfe::editor {
     /// @param newPos The cursor's new position.
     void SetCursorScreenPos(CursorPos newPos);
 
+    /// @brief Returns if the cursor left button is pressed.
+    bool8_t CursorPressed();
+
     /// @brief Returns the cursor's type.
     CursorType GetCursorType();
     /// @brief Sets the cursor's type.

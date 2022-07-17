@@ -1,6 +1,7 @@
 #include "GUI/Window.hpp"
 #include "Config/EditorColors.hpp"
 #include "Vulkan/Device.hpp"
+#include "IO/Cursor.hpp"
 
 namespace wfe::editor {
     // Static variables
@@ -113,6 +114,24 @@ namespace wfe::editor {
 
     // Private member functions
     Window::WindowMesh Window::GetWindowMesh() {
+        CursorPos cursorPos = GetCursorPos();
+
+        if(windowDragged) {
+            // Move the window
+            ptrdiff_t movementX = cursorPos.x - cursorPrevX;
+            ptrdiff_t movementY = cursorPos.y - cursorPrevY;
+
+            windowXPos += movementX;
+            windowYPos += movementY;
+        }
+
+        // Check if the window should be dragged
+        windowDragged = CursorPressed() && cursorPos.x >= windowXPos && cursorPos.x <= windowXPos + 98 && cursorPos.y >= windowYPos && cursorPos.y <= windowYPos + 18;
+        
+        // Set the new cursor coords
+        cursorPrevX = cursorPos.x;
+        cursorPrevY = cursorPos.y;
+
         WindowMesh mesh;
 
         // Extract the rgb components from the background and foreground color
