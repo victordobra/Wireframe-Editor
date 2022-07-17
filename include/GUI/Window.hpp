@@ -7,6 +7,8 @@
 namespace wfe::editor {
     class Window {
     public:
+        static const ptrdiff_t RESIZE_MARGIN = 5;
+
         struct WindowMesh {
             vector<GUIVertex> vertices;
             vector<uint32_t> indices;
@@ -34,8 +36,10 @@ namespace wfe::editor {
 
         size_t windowWidth = 200, windowHeight = 200;
         ptrdiff_t windowXPos = 100, windowYPos = 100;
+
         ptrdiff_t cursorPrevX = 0, cursorPrevY = 0;
         bool8_t windowDragged = false;
+        bool8_t windowResizeN = false, windowResizeS = false, windowResizeW = false, windowResizeE = false;
 
         VkBuffer vertexBuffer = NULL;
         VkDeviceMemory vertexMemory = NULL;

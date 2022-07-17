@@ -237,6 +237,10 @@ LRESULT CALLBACK WinProc(_In_ HWND hWindow, _In_ UINT message, _In_ WPARAM wPara
             wfe::editor::RecreateSwapChain({ (uint32_t)windowWidth, (uint32_t)windowHeight });
     }
         return 0;
+    case WM_MOUSEMOVE:
+        wfe::editor::UpdateCursorType();
+
+        return 0;
     case WM_PAINT:
         wfe::editor::Draw();
         wfe::editor::UpdateCursorType();
