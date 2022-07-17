@@ -159,7 +159,9 @@ LRESULT CALLBACK WinProc(_In_ HWND hWindow, _In_ UINT message, _In_ WPARAM wPara
         wfe::editor::CreateGUIPipeline();
 
     {
-        wfe::editor::Window* window = new wfe::editor::Window();
+        wfe::editor::Window* window1 = new wfe::editor::Window();
+        wfe::editor::Window* window2 = new wfe::editor::Window();
+        window2->windowXPos = 400;
     }
 
         return 0;

@@ -14,6 +14,8 @@ namespace wfe::editor {
     HCURSOR cursor = nullptr;
 
     void UpdateInput() {
+        cursorType = CURSOR_TYPE_DEFAULT;
+
         bool8_t newCursorDown = GetAsyncKeyState(VK_LBUTTON) >> 15;
         cursorPressed = !cursorDown && newCursorDown;
         cursorReleased = cursorDown && !newCursorDown;
