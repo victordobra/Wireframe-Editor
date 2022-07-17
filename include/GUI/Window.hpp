@@ -7,6 +7,11 @@
 namespace wfe::editor {
     class Window {
     public:
+        struct WindowMesh {
+            vector<GUIVertex> vertices;
+            vector<uint32_t> indices;
+        };
+
         Window();
         Window(const Window&) = delete;
         Window(Window&&) noexcept = delete;
@@ -23,9 +28,11 @@ namespace wfe::editor {
 
         virtual ~Window();
     private:
+        WindowMesh GetWindowMesh();
+
         static vector<Window*> windows;
 
-        size_t windowWidth = 100, windowHeight = 100, windowXPos = 0, windowYPos = 0;
+        size_t windowWidth = 200, windowHeight = 200, windowXPos = 100, windowYPos = 100;
 
         VkBuffer vertexBuffer = NULL;
         VkDeviceMemory vertexMemory = NULL;

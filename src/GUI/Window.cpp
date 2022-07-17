@@ -6,7 +6,7 @@ namespace wfe::editor {
     // Static variables
     vector<Window*> Window::windows;
 
-    // Member functions
+    // Public member functions
     Window::Window() {
         windows.push_back(this);
     }
@@ -30,21 +30,11 @@ namespace wfe::editor {
             vkFreeMemory(GetDevice(), indexMemory, nullptr);
         }
 
-        // Create placeholder vertices and indices
-        float32_t red = ((GetForegroundColor() >> 16) & 0xff) / 255.f;
-        float32_t green = ((GetForegroundColor() >> 8) & 0xff) / 255.f;
-        float32_t blue = (GetForegroundColor() & 0xff) / 255.f;
+        // Load the mesh
+        WindowMesh windowMesh = GetWindowMesh();
 
-        GUIVertex vertices[4]{
-            { { 250.f, 250.f }, { 0.f, 0.f }, { red, green, blue, 1.f } },
-            { { 500.f, 250.f }, { 0.f, 0.f }, { red, green, blue, 1.f } },
-            { { 500.f, 500.f }, { 0.f, 0.f }, { red, green, blue, 1.f } },
-            { { 250.f, 500.f }, { 0.f, 0.f }, { red, green, blue, 1.f } }
-        };
-        uint32_t indices[6]{ 0, 1, 3, 1, 2, 3 };
-
-        vertexCount = 4;
-        indexCount = 6;
+        vertexCount = windowMesh.vertices.size();
+        indexCount = windowMesh.indices.size();
 
         // Create the vertex and index buffer
         VkDeviceSize vertexBufferSize = sizeof(GUIVertex) * vertexCount;
@@ -63,8 +53,8 @@ namespace wfe::editor {
         vkMapMemory(GetDevice(), vertexMemory, 0, vertexBufferSize, 0, &vertexMappedMemory);
         vkMapMemory(GetDevice(), indexMemory, 0, indexBufferSize, 0, &indexMappedMemory);
 
-        memcpy(vertexMappedMemory, vertices, (size_t)vertexBufferSize);
-        memcpy(indexMappedMemory, indices, (size_t)indexBufferSize);
+        memcpy(vertexMappedMemory, windowMesh.vertices.data(), (size_t)vertexBufferSize);
+        memcpy(indexMappedMemory, windowMesh.indices.data(), (size_t)indexBufferSize);
 
         VkMappedMemoryRange mappedMemoryRanges[2];
 
@@ -119,5 +109,50 @@ namespace wfe::editor {
                 windows.erase(&window);
                 break;
             }
+    }
+
+    // Private member functions
+    Window::WindowMesh Window::GetWindowMesh() {
+        WindowMesh mesh;
+
+        // Extract the rgb components from the background and foreground color
+        uint32_t backgroundColor = GetBackgroundColor();
+        float32_t redBgd = ((backgroundColor >> 16) & 0xff) / 255.f;
+        float32_t greenBgd = ((backgroundColor >> 0) & 0xff) / 255.f;
+        float32_t blueBgd = (backgroundColor & 0xff) / 255.f;
+
+        uint32_t foregroundColor = GetForegroundColor();
+        float32_t redFgd = ((foregroundColor >> 16) & 0xff) / 255.f;
+        float32_t greenFgd = ((foregroundColor >> 0) & 0xff) / 255.f;
+        float32_t blueFgd = (foregroundColor & 0xff) / 255.f;
+
+        // Create the top bar of the window; placeholder width at 48
+        mesh.vertices.push_back({ { (float32_t)windowXPos,      (float32_t)windowYPos      }, { 0.f, 0.f }, { redFgd, greenFgd, blueFgd, 1.f } });
+        mesh.vertices.push_back({ { (float32_t)windowXPos + 98, (float32_t)windowYPos      }, { 0.f, 0.f }, { redFgd, greenFgd, blueFgd, 1.f } });
+        mesh.vertices.push_back({ { (float32_t)windowXPos + 98, (float32_t)windowYPos + 18 }, { 0.f, 0.f }, { redFgd, greenFgd, blueFgd, 1.f } });
+        mesh.vertices.push_back({ { (float32_t)windowXPos,      (float32_t)windowYPos + 18 }, { 0.f, 0.f }, { redFgd, greenFgd, blueFgd, 1.f } });
+
+        mesh.indices.push_back(0); mesh.indices.push_back(1); mesh.indices.push_back(3);
+        mesh.indices.push_back(1); mesh.indices.push_back(2); mesh.indices.push_back(3);
+
+        // Create the rest of the top bar
+        mesh.vertices.push_back({ { (float32_t)windowXPos + 98,          (float32_t)windowYPos      }, { 0.f, 0.f }, { redBgd, greenBgd, blueBgd, 1.f } });
+        mesh.vertices.push_back({ { (float32_t)windowXPos + windowWidth, (float32_t)windowYPos      }, { 0.f, 0.f }, { redBgd, greenBgd, blueBgd, 1.f } });
+        mesh.vertices.push_back({ { (float32_t)windowXPos + windowWidth, (float32_t)windowYPos + 18 }, { 0.f, 0.f }, { redBgd, greenBgd, blueBgd, 1.f } });
+        mesh.vertices.push_back({ { (float32_t)windowXPos + 98,          (float32_t)windowYPos + 18 }, { 0.f, 0.f }, { redBgd, greenBgd, blueBgd, 1.f } });
+
+        mesh.indices.push_back(4); mesh.indices.push_back(5); mesh.indices.push_back(7);
+        mesh.indices.push_back(5); mesh.indices.push_back(6); mesh.indices.push_back(7);
+
+        // Create the main window body
+        mesh.vertices.push_back({ { (float32_t)windowXPos,               (float32_t)windowYPos + 20           }, { 0.f, 0.f }, { redFgd, greenFgd, blueFgd, 1.f } });
+        mesh.vertices.push_back({ { (float32_t)windowXPos + windowWidth, (float32_t)windowYPos + 20           }, { 0.f, 0.f }, { redFgd, greenFgd, blueFgd, 1.f } });
+        mesh.vertices.push_back({ { (float32_t)windowXPos + windowWidth, (float32_t)windowYPos + windowHeight }, { 0.f, 0.f }, { redFgd, greenFgd, blueFgd, 1.f } });
+        mesh.vertices.push_back({ { (float32_t)windowXPos,               (float32_t)windowYPos + windowHeight }, { 0.f, 0.f }, { redFgd, greenFgd, blueFgd, 1.f } });
+
+        mesh.indices.push_back(8); mesh.indices.push_back(9);  mesh.indices.push_back(11);
+        mesh.indices.push_back(9); mesh.indices.push_back(10); mesh.indices.push_back(11);
+
+        return mesh;
     }
 }
