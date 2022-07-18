@@ -178,7 +178,7 @@ namespace wfe::editor {
            cursorPos.x >  windowXPos + WINDOW_MARGIN && 
            cursorPos.x <  windowXPos + WINDOW_MARGIN + 100 && 
            cursorPos.y >  windowYPos + 2 * WINDOW_MARGIN && 
-           cursorPos.y <  windowYPos + WINDOW_MARGIN + 20)
+           cursorPos.y <  windowYPos + WINDOW_MARGIN + WINDOW_TOP_BAR_HEIGHT)
             windowDrag = true;
         
         if(CursorPressed() && windowCanResizeN)
@@ -226,6 +226,11 @@ namespace wfe::editor {
         float32_t greenFgd = ((foregroundColor >> 0) & 0xff) / 255.f;
         float32_t blueFgd = (foregroundColor & 0xff) / 255.f;
 
+        uint32_t dockingColor = GetDockingColor();
+        float32_t redDock = ((dockingColor >> 16) & 0xff) / 255.f;
+        float32_t greenDock = ((dockingColor >> 0) & 0xff) / 255.f;
+        float32_t blueDock = (dockingColor & 0xff) / 255.f;
+
         // Create the top bar of the window; placeholder width at 100
         mesh.vertices.push_back({ { (float32_t)windowXPos + WINDOW_MARGIN,       (float32_t)windowYPos + WINDOW_MARGIN      }, { 0.f, 0.f }, { redFgd, greenFgd, blueFgd, 1.f } });
         mesh.vertices.push_back({ { (float32_t)windowXPos + WINDOW_MARGIN + 100, (float32_t)windowYPos + WINDOW_MARGIN      }, { 0.f, 0.f }, { redFgd, greenFgd, blueFgd, 1.f } });
@@ -236,23 +241,23 @@ namespace wfe::editor {
         mesh.indices.push_back(1); mesh.indices.push_back(2); mesh.indices.push_back(3);
 
         // Create the main window body
-        mesh.vertices.push_back({ { (float32_t)windowXPos + WINDOW_MARGIN,               (float32_t)windowYPos + 2 * WINDOW_MARGIN + 20       }, { 0.f, 0.f }, { redFgd, greenFgd, blueFgd, 1.f } });
-        mesh.vertices.push_back({ { (float32_t)windowXPos + windowWidth - WINDOW_MARGIN, (float32_t)windowYPos + 2 * WINDOW_MARGIN + 20       }, { 0.f, 0.f }, { redFgd, greenFgd, blueFgd, 1.f } });
-        mesh.vertices.push_back({ { (float32_t)windowXPos + windowWidth - WINDOW_MARGIN, (float32_t)windowYPos + windowHeight - WINDOW_MARGIN }, { 0.f, 0.f }, { redFgd, greenFgd, blueFgd, 1.f } });
-        mesh.vertices.push_back({ { (float32_t)windowXPos + WINDOW_MARGIN,               (float32_t)windowYPos + windowHeight - WINDOW_MARGIN }, { 0.f, 0.f }, { redFgd, greenFgd, blueFgd, 1.f } });
+        mesh.vertices.push_back({ { (float32_t)windowXPos + WINDOW_MARGIN,               (float32_t)windowYPos + 2 * WINDOW_MARGIN + WINDOW_TOP_BAR_HEIGHT }, { 0.f, 0.f }, { redFgd, greenFgd, blueFgd, 1.f } });
+        mesh.vertices.push_back({ { (float32_t)windowXPos + windowWidth - WINDOW_MARGIN, (float32_t)windowYPos + 2 * WINDOW_MARGIN + WINDOW_TOP_BAR_HEIGHT }, { 0.f, 0.f }, { redFgd, greenFgd, blueFgd, 1.f } });
+        mesh.vertices.push_back({ { (float32_t)windowXPos + windowWidth - WINDOW_MARGIN, (float32_t)windowYPos + windowHeight - WINDOW_MARGIN              }, { 0.f, 0.f }, { redFgd, greenFgd, blueFgd, 1.f } });
+        mesh.vertices.push_back({ { (float32_t)windowXPos + WINDOW_MARGIN,               (float32_t)windowYPos + windowHeight - WINDOW_MARGIN              }, { 0.f, 0.f }, { redFgd, greenFgd, blueFgd, 1.f } });
 
         mesh.indices.push_back(4); mesh.indices.push_back(5); mesh.indices.push_back(7);
         mesh.indices.push_back(5); mesh.indices.push_back(6); mesh.indices.push_back(7);
 
         // Create the window edge 
-        mesh.vertices.push_back({ { (float32_t)windowXPos + WINDOW_MARGIN,           (float32_t)windowYPos + WINDOW_MARGIN          }, { 0.f, 0.f }, { redE, greenE, blueE, 1.f } });
-        mesh.vertices.push_back({ { (float32_t)windowXPos + WINDOW_MARGIN + 100,     (float32_t)windowYPos + WINDOW_MARGIN          }, { 0.f, 0.f }, { redE, greenE, blueE, 1.f } });
-        mesh.vertices.push_back({ { (float32_t)windowXPos + WINDOW_MARGIN + 100,     (float32_t)windowYPos + WINDOW_MARGIN + 20     }, { 0.f, 0.f }, { redE, greenE, blueE, 1.f } });
-        mesh.vertices.push_back({ { (float32_t)windowXPos + WINDOW_MARGIN,           (float32_t)windowYPos + WINDOW_MARGIN + 20     }, { 0.f, 0.f }, { redE, greenE, blueE, 1.f } });
-        mesh.vertices.push_back({ { (float32_t)windowXPos,                           (float32_t)windowYPos                          }, { 0.f, 0.f }, { redE, greenE, blueE, 1.f } });
-        mesh.vertices.push_back({ { (float32_t)windowXPos + 100 + 2 * WINDOW_MARGIN, (float32_t)windowYPos                          }, { 0.f, 0.f }, { redE, greenE, blueE, 1.f } });
-        mesh.vertices.push_back({ { (float32_t)windowXPos + 100 + 2 * WINDOW_MARGIN, (float32_t)windowYPos + 2 * WINDOW_MARGIN + 20 }, { 0.f, 0.f }, { redE, greenE, blueE, 1.f } });
-        mesh.vertices.push_back({ { (float32_t)windowXPos,                           (float32_t)windowYPos + 2 * WINDOW_MARGIN + 20 }, { 0.f, 0.f }, { redE, greenE, blueE, 1.f } });
+        mesh.vertices.push_back({ { (float32_t)windowXPos + WINDOW_MARGIN,           (float32_t)windowYPos + WINDOW_MARGIN                             }, { 0.f, 0.f }, { redE, greenE, blueE, 1.f } });
+        mesh.vertices.push_back({ { (float32_t)windowXPos + WINDOW_MARGIN + 100,     (float32_t)windowYPos + WINDOW_MARGIN                             }, { 0.f, 0.f }, { redE, greenE, blueE, 1.f } });
+        mesh.vertices.push_back({ { (float32_t)windowXPos + WINDOW_MARGIN + 100,     (float32_t)windowYPos + WINDOW_MARGIN + WINDOW_TOP_BAR_HEIGHT     }, { 0.f, 0.f }, { redE, greenE, blueE, 1.f } });
+        mesh.vertices.push_back({ { (float32_t)windowXPos + WINDOW_MARGIN,           (float32_t)windowYPos + WINDOW_MARGIN + WINDOW_TOP_BAR_HEIGHT     }, { 0.f, 0.f }, { redE, greenE, blueE, 1.f } });
+        mesh.vertices.push_back({ { (float32_t)windowXPos,                           (float32_t)windowYPos                                             }, { 0.f, 0.f }, { redE, greenE, blueE, 1.f } });
+        mesh.vertices.push_back({ { (float32_t)windowXPos + 100 + 2 * WINDOW_MARGIN, (float32_t)windowYPos                                             }, { 0.f, 0.f }, { redE, greenE, blueE, 1.f } });
+        mesh.vertices.push_back({ { (float32_t)windowXPos + 100 + 2 * WINDOW_MARGIN, (float32_t)windowYPos + 2 * WINDOW_MARGIN + WINDOW_TOP_BAR_HEIGHT }, { 0.f, 0.f }, { redE, greenE, blueE, 1.f } });
+        mesh.vertices.push_back({ { (float32_t)windowXPos,                           (float32_t)windowYPos + 2 * WINDOW_MARGIN + WINDOW_TOP_BAR_HEIGHT }, { 0.f, 0.f }, { redE, greenE, blueE, 1.f } });
 
         mesh.indices.push_back(12); mesh.indices.push_back(8 ); mesh.indices.push_back(15);
         mesh.indices.push_back(8 ); mesh.indices.push_back(11); mesh.indices.push_back(15);
@@ -263,14 +268,14 @@ namespace wfe::editor {
         mesh.indices.push_back(12); mesh.indices.push_back(9 ); mesh.indices.push_back(8 );
         mesh.indices.push_back(12); mesh.indices.push_back(13); mesh.indices.push_back(9 );
 
-        mesh.vertices.push_back({ { (float32_t)windowXPos + WINDOW_MARGIN,               (float32_t)windowYPos + 2 * WINDOW_MARGIN + 20       }, { 0.f, 0.f }, { redE, greenE, blueE, 1.f } });
-        mesh.vertices.push_back({ { (float32_t)windowXPos + windowWidth - WINDOW_MARGIN, (float32_t)windowYPos + 2 * WINDOW_MARGIN + 20       }, { 0.f, 0.f }, { redE, greenE, blueE, 1.f } });
-        mesh.vertices.push_back({ { (float32_t)windowXPos + windowWidth - WINDOW_MARGIN, (float32_t)windowYPos + windowHeight - WINDOW_MARGIN }, { 0.f, 0.f }, { redE, greenE, blueE, 1.f } });
-        mesh.vertices.push_back({ { (float32_t)windowXPos + WINDOW_MARGIN,               (float32_t)windowYPos + windowHeight - WINDOW_MARGIN }, { 0.f, 0.f }, { redE, greenE, blueE, 1.f } });
-        mesh.vertices.push_back({ { (float32_t)windowXPos,                               (float32_t)windowYPos + WINDOW_MARGIN + 20           }, { 0.f, 0.f }, { redE, greenE, blueE, 1.f } });
-        mesh.vertices.push_back({ { (float32_t)windowXPos + windowWidth,                 (float32_t)windowYPos + WINDOW_MARGIN + 20           }, { 0.f, 0.f }, { redE, greenE, blueE, 1.f } });
-        mesh.vertices.push_back({ { (float32_t)windowXPos + windowWidth,                 (float32_t)windowYPos + windowHeight                 }, { 0.f, 0.f }, { redE, greenE, blueE, 1.f } });
-        mesh.vertices.push_back({ { (float32_t)windowXPos,                               (float32_t)windowYPos + windowHeight                 }, { 0.f, 0.f }, { redE, greenE, blueE, 1.f } });
+        mesh.vertices.push_back({ { (float32_t)windowXPos + WINDOW_MARGIN,               (float32_t)windowYPos + 2 * WINDOW_MARGIN + WINDOW_TOP_BAR_HEIGHT }, { 0.f, 0.f }, { redE, greenE, blueE, 1.f } });
+        mesh.vertices.push_back({ { (float32_t)windowXPos + windowWidth - WINDOW_MARGIN, (float32_t)windowYPos + 2 * WINDOW_MARGIN + WINDOW_TOP_BAR_HEIGHT }, { 0.f, 0.f }, { redE, greenE, blueE, 1.f } });
+        mesh.vertices.push_back({ { (float32_t)windowXPos + windowWidth - WINDOW_MARGIN, (float32_t)windowYPos + windowHeight - WINDOW_MARGIN              }, { 0.f, 0.f }, { redE, greenE, blueE, 1.f } });
+        mesh.vertices.push_back({ { (float32_t)windowXPos + WINDOW_MARGIN,               (float32_t)windowYPos + windowHeight - WINDOW_MARGIN              }, { 0.f, 0.f }, { redE, greenE, blueE, 1.f } });
+        mesh.vertices.push_back({ { (float32_t)windowXPos,                               (float32_t)windowYPos + WINDOW_MARGIN + WINDOW_TOP_BAR_HEIGHT     }, { 0.f, 0.f }, { redE, greenE, blueE, 1.f } });
+        mesh.vertices.push_back({ { (float32_t)windowXPos + windowWidth,                 (float32_t)windowYPos + WINDOW_MARGIN + WINDOW_TOP_BAR_HEIGHT     }, { 0.f, 0.f }, { redE, greenE, blueE, 1.f } });
+        mesh.vertices.push_back({ { (float32_t)windowXPos + windowWidth,                 (float32_t)windowYPos + windowHeight                              }, { 0.f, 0.f }, { redE, greenE, blueE, 1.f } });
+        mesh.vertices.push_back({ { (float32_t)windowXPos,                               (float32_t)windowYPos + windowHeight                              }, { 0.f, 0.f }, { redE, greenE, blueE, 1.f } });
 
         mesh.indices.push_back(20); mesh.indices.push_back(16); mesh.indices.push_back(23);
         mesh.indices.push_back(16); mesh.indices.push_back(19); mesh.indices.push_back(23);
@@ -280,6 +285,71 @@ namespace wfe::editor {
         mesh.indices.push_back(17); mesh.indices.push_back(21); mesh.indices.push_back(22);
         mesh.indices.push_back(20); mesh.indices.push_back(17); mesh.indices.push_back(16);
         mesh.indices.push_back(20); mesh.indices.push_back(21); mesh.indices.push_back(17);
+
+        size_t vertexCount = mesh.vertices.size();
+
+        // Check every window to see if any docking highlights are needed
+        if(windowDrag)
+            for(auto* window : windows) {
+                if(window == this)
+                    continue;
+                
+                if(!(cursorPos.x >= window->windowXPos + WINDOW_MARGIN &&
+                     cursorPos.x <= window->windowXPos + window->windowWidth - WINDOW_MARGIN &&
+                     cursorPos.y >= window->windowYPos + 2 * WINDOW_MARGIN + WINDOW_TOP_BAR_HEIGHT &&
+                     cursorPos.y <= window->windowYPos + window->windowHeight - WINDOW_MARGIN))
+                    continue;
+                
+                // Create the docking highlights
+                ptrdiff_t windowXMid = (2 * window->windowXPos + window->windowWidth) >> 1;
+                ptrdiff_t windowYMid = (2 * window->windowYPos + 2 * WINDOW_MARGIN + WINDOW_TOP_BAR_HEIGHT + window->windowHeight) >> 1;
+
+                // Top highlight
+                mesh.vertices.push_back({ { (float32_t)windowXMid - WINDOW_DOCK_HIGHLIGHT_SIZE, (float32_t)window->windowYPos + 2 * WINDOW_MARGIN + WINDOW_TOP_BAR_HEIGHT                              }, { 0.f, 0.f }, { redDock, greenDock, blueDock, 1.f } });
+                mesh.vertices.push_back({ { (float32_t)windowXMid + WINDOW_DOCK_HIGHLIGHT_SIZE, (float32_t)window->windowYPos + 2 * WINDOW_MARGIN + WINDOW_TOP_BAR_HEIGHT                              }, { 0.f, 0.f }, { redDock, greenDock, blueDock, 1.f } });
+                mesh.vertices.push_back({ { (float32_t)windowXMid + WINDOW_DOCK_HIGHLIGHT_SIZE, (float32_t)window->windowYPos + 2 * WINDOW_MARGIN + WINDOW_TOP_BAR_HEIGHT + WINDOW_DOCK_HIGHLIGHT_SIZE }, { 0.f, 0.f }, { redDock, greenDock, blueDock, 1.f } });
+                mesh.vertices.push_back({ { (float32_t)windowXMid - WINDOW_DOCK_HIGHLIGHT_SIZE, (float32_t)window->windowYPos + 2 * WINDOW_MARGIN + WINDOW_TOP_BAR_HEIGHT + WINDOW_DOCK_HIGHLIGHT_SIZE }, { 0.f, 0.f }, { redDock, greenDock, blueDock, 1.f } });
+
+                mesh.indices.push_back(vertexCount    ); mesh.indices.push_back(vertexCount + 1); mesh.indices.push_back(vertexCount + 3);
+                mesh.indices.push_back(vertexCount + 1); mesh.indices.push_back(vertexCount + 2); mesh.indices.push_back(vertexCount + 3);
+
+                vertexCount = mesh.vertices.size();
+
+                // Bottom highlight
+                mesh.vertices.push_back({ { (float32_t)windowXMid - WINDOW_DOCK_HIGHLIGHT_SIZE, (float32_t)window->windowYPos + window->windowHeight - WINDOW_MARGIN - WINDOW_DOCK_HIGHLIGHT_SIZE }, { 0.f, 0.f }, { redDock, greenDock, blueDock, 1.f } });
+                mesh.vertices.push_back({ { (float32_t)windowXMid + WINDOW_DOCK_HIGHLIGHT_SIZE, (float32_t)window->windowYPos + window->windowHeight - WINDOW_MARGIN - WINDOW_DOCK_HIGHLIGHT_SIZE }, { 0.f, 0.f }, { redDock, greenDock, blueDock, 1.f } });
+                mesh.vertices.push_back({ { (float32_t)windowXMid + WINDOW_DOCK_HIGHLIGHT_SIZE, (float32_t)window->windowYPos + window->windowHeight - WINDOW_MARGIN                              }, { 0.f, 0.f }, { redDock, greenDock, blueDock, 1.f } });
+                mesh.vertices.push_back({ { (float32_t)windowXMid - WINDOW_DOCK_HIGHLIGHT_SIZE, (float32_t)window->windowYPos + window->windowHeight - WINDOW_MARGIN                              }, { 0.f, 0.f }, { redDock, greenDock, blueDock, 1.f } });
+
+                mesh.indices.push_back(vertexCount    ); mesh.indices.push_back(vertexCount + 1); mesh.indices.push_back(vertexCount + 3);
+                mesh.indices.push_back(vertexCount + 1); mesh.indices.push_back(vertexCount + 2); mesh.indices.push_back(vertexCount + 3);
+
+                vertexCount = mesh.vertices.size();
+
+                // Left highlight
+                mesh.vertices.push_back({ { (float32_t)window->windowXPos + WINDOW_MARGIN                             , (float32_t)windowYMid - WINDOW_DOCK_HIGHLIGHT_SIZE }, { 0.f, 0.f }, { redDock, greenDock, blueDock, 1.f } });
+                mesh.vertices.push_back({ { (float32_t)window->windowXPos + WINDOW_MARGIN + WINDOW_DOCK_HIGHLIGHT_SIZE, (float32_t)windowYMid - WINDOW_DOCK_HIGHLIGHT_SIZE }, { 0.f, 0.f }, { redDock, greenDock, blueDock, 1.f } });
+                mesh.vertices.push_back({ { (float32_t)window->windowXPos + WINDOW_MARGIN + WINDOW_DOCK_HIGHLIGHT_SIZE, (float32_t)windowYMid + WINDOW_DOCK_HIGHLIGHT_SIZE }, { 0.f, 0.f }, { redDock, greenDock, blueDock, 1.f } });
+                mesh.vertices.push_back({ { (float32_t)window->windowXPos + WINDOW_MARGIN                             , (float32_t)windowYMid + WINDOW_DOCK_HIGHLIGHT_SIZE }, { 0.f, 0.f }, { redDock, greenDock, blueDock, 1.f } });
+
+                mesh.indices.push_back(vertexCount    ); mesh.indices.push_back(vertexCount + 1); mesh.indices.push_back(vertexCount + 3);
+                mesh.indices.push_back(vertexCount + 1); mesh.indices.push_back(vertexCount + 2); mesh.indices.push_back(vertexCount + 3);
+
+                vertexCount = mesh.vertices.size();
+
+                // Right highlight
+                mesh.vertices.push_back({ { (float32_t)window->windowXPos + window->windowWidth - WINDOW_MARGIN - WINDOW_DOCK_HIGHLIGHT_SIZE, (float32_t)windowYMid - WINDOW_DOCK_HIGHLIGHT_SIZE }, { 0.f, 0.f }, { redDock, greenDock, blueDock, 1.f } });
+                mesh.vertices.push_back({ { (float32_t)window->windowXPos + window->windowWidth - WINDOW_MARGIN,                              (float32_t)windowYMid - WINDOW_DOCK_HIGHLIGHT_SIZE }, { 0.f, 0.f }, { redDock, greenDock, blueDock, 1.f } });
+                mesh.vertices.push_back({ { (float32_t)window->windowXPos + window->windowWidth - WINDOW_MARGIN,                              (float32_t)windowYMid + WINDOW_DOCK_HIGHLIGHT_SIZE }, { 0.f, 0.f }, { redDock, greenDock, blueDock, 1.f } });
+                mesh.vertices.push_back({ { (float32_t)window->windowXPos + window->windowWidth - WINDOW_MARGIN - WINDOW_DOCK_HIGHLIGHT_SIZE, (float32_t)windowYMid + WINDOW_DOCK_HIGHLIGHT_SIZE }, { 0.f, 0.f }, { redDock, greenDock, blueDock, 1.f } });
+
+                mesh.indices.push_back(vertexCount    ); mesh.indices.push_back(vertexCount + 1); mesh.indices.push_back(vertexCount + 3);
+                mesh.indices.push_back(vertexCount + 1); mesh.indices.push_back(vertexCount + 2); mesh.indices.push_back(vertexCount + 3);
+
+                vertexCount = mesh.vertices.size();
+
+                break;
+            }
 
         return mesh;
     }

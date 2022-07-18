@@ -7,7 +7,7 @@ namespace wfe::editor {
     uint32_t foregroundColor = 0x444444;
     uint32_t highlightColor = 0x999999;
     uint32_t textColor = 0xeeeeff;
-    uint32_t dockingColor = 0x3333ff;
+    uint32_t dockingColor = 0x000077;
 
     // Functions
     void LoadColors() {
@@ -53,6 +53,9 @@ namespace wfe::editor {
     uint32_t GetTextColor() {
         return textColor;
     }
+    uint32_t GetDockingColor() {
+        return dockingColor;
+    }
 
     void SetBackgroundColor(uint32_t newColor) {
         backgroundColor = newColor;
@@ -68,5 +71,8 @@ namespace wfe::editor {
     }
     void SetTextColor(uint32_t newColor) {
         textColor = newColor;
+    }
+    void SetDockingColor(uint32_t newColor) {
+        dockingColor = newColor;
     }
 }

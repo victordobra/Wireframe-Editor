@@ -9,6 +9,8 @@ namespace wfe::editor {
     public:
         static const ptrdiff_t WINDOW_MARGIN = 3;
         static const ptrdiff_t WINDOW_MIN_SIZE = 150;
+        static const ptrdiff_t WINDOW_TOP_BAR_HEIGHT = 20;
+        static const ptrdiff_t WINDOW_DOCK_HIGHLIGHT_SIZE = 40;
 
         struct WindowMesh {
             vector<GUIVertex> vertices;
