@@ -66,6 +66,7 @@ static COLORREF HexColorToWin32Hex(uint32_t color) {
 static void RegisterApplicationClass() {
     // Load the editor colors
     wfe::editor::LoadColors();
+    wfe::editor::SaveColors();
 
     // Create the class info
     WNDCLASSEX wcex;

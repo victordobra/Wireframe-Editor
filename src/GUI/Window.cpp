@@ -148,8 +148,8 @@ namespace wfe::editor {
         // Check the window resize flags for every dimension
         bool8_t windowCanResizeN = cursorPos.x >= windowXPos && 
                                    cursorPos.x <= windowXPos + windowWidth && 
-                                   cursorPos.y >= windowYPos + 20 + WINDOW_MARGIN && 
-                                   cursorPos.y <= windowYPos + 20 + 3 * WINDOW_MARGIN;
+                                   cursorPos.y >= windowYPos && 
+                                   cursorPos.y <= windowYPos + 2 * WINDOW_MARGIN;
         bool8_t windowCanResizeS = cursorPos.x >= windowXPos && 
                                    cursorPos.x <= windowXPos + windowWidth && 
                                    cursorPos.y >= windowYPos + windowHeight - WINDOW_MARGIN && 
@@ -175,10 +175,10 @@ namespace wfe::editor {
 
         // Check if the window should be dragged
         if(CursorPressed() && 
-           cursorPos.x >= windowXPos + WINDOW_MARGIN && 
-           cursorPos.x <= windowXPos + WINDOW_MARGIN + 100 && 
-           cursorPos.y >= windowYPos + WINDOW_MARGIN && 
-           cursorPos.y <= windowYPos + WINDOW_MARGIN + 20)
+           cursorPos.x >  windowXPos + WINDOW_MARGIN && 
+           cursorPos.x <  windowXPos + WINDOW_MARGIN + 100 && 
+           cursorPos.y >  windowYPos + 2 * WINDOW_MARGIN && 
+           cursorPos.y <  windowYPos + WINDOW_MARGIN + 20)
             windowDrag = true;
         
         if(CursorPressed() && windowCanResizeN)
@@ -210,7 +210,7 @@ namespace wfe::editor {
                     windows.erase(&window);
                     break;
                 }
-            windows.push_back(this);
+            windows.insert(windows.begin(), this);
         }
 
         WindowMesh mesh;
