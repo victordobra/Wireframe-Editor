@@ -7,7 +7,7 @@
 namespace wfe::editor {
     class Window {
     public:
-        static const ptrdiff_t RESIZE_MARGIN = 5;
+        static const ptrdiff_t RESIZE_MARGIN = 3;
 
         struct WindowMesh {
             vector<GUIVertex> vertices;
