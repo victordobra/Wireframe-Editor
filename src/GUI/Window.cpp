@@ -128,54 +128,58 @@ namespace wfe::editor {
         if(windowResizeN) {
             windowYPos += movementY;
             windowHeight -= movementY;
+            windowHeight = windowHeight < WINDOW_MIN_SIZE ? WINDOW_MIN_SIZE : windowHeight;
         }
         if(windowResizeS) {
             windowHeight += movementY;
+            windowHeight = windowHeight < WINDOW_MIN_SIZE ? WINDOW_MIN_SIZE : windowHeight;
         }
 
         if(windowResizeW) {
             windowXPos += movementX;
             windowWidth -= movementX;
+            windowWidth = windowWidth < WINDOW_MIN_SIZE ? WINDOW_MIN_SIZE : windowWidth;
         }
         if(windowResizeE) {
             windowWidth += movementX;
+            windowWidth = windowWidth < WINDOW_MIN_SIZE ? WINDOW_MIN_SIZE : windowWidth;
         }
         
+        // Check the window resize flags for every dimension
+        bool8_t windowCanResizeN = cursorPos.x >= windowXPos && 
+                                   cursorPos.x <= windowXPos + windowWidth && 
+                                   cursorPos.y >= windowYPos + 20 + WINDOW_MARGIN && 
+                                   cursorPos.y <= windowYPos + 20 + 3 * WINDOW_MARGIN;
+        bool8_t windowCanResizeS = cursorPos.x >= windowXPos && 
+                                   cursorPos.x <= windowXPos + windowWidth && 
+                                   cursorPos.y >= windowYPos + windowHeight - WINDOW_MARGIN && 
+                                   cursorPos.y <= windowYPos + windowHeight + WINDOW_MARGIN;
+        bool8_t windowCanResizeW = cursorPos.x >= windowXPos - WINDOW_MARGIN && 
+                                   cursorPos.x <= windowXPos + WINDOW_MARGIN && 
+                                   cursorPos.y >= windowYPos && 
+                                   cursorPos.y <= windowYPos + windowHeight;
+        bool8_t windowCanResizeE = cursorPos.x >= windowXPos + windowWidth - WINDOW_MARGIN && 
+                                   cursorPos.x <= windowXPos + windowWidth + WINDOW_MARGIN && 
+                                   cursorPos.y >= windowYPos && 
+                                   cursorPos.y <= windowYPos + windowHeight;
+
         // Set the cursor type based on resize modes
-        if((windowCanResizeN && windowCanResizeE) || (windowCanResizeS && windowCanResizeW))
+        if(((windowCanResizeN && windowCanResizeE) || (windowCanResizeS && windowCanResizeW)) || ((windowResizeN && windowResizeE) || (windowResizeS && windowResizeW)))
             SetCursorType(CURSOR_TYPE_SIZE_DIAGONAL_RIGHT);
-        else if((windowCanResizeN && windowCanResizeW) || (windowCanResizeS && windowCanResizeE))
+        else if(((windowCanResizeN && windowCanResizeW) || (windowCanResizeS && windowCanResizeE)) || ((windowResizeN && windowResizeW) || (windowResizeS && windowResizeE)))
             SetCursorType(CURSOR_TYPE_SIZE_DIAGONAL_LEFT);
-        else if(windowCanResizeN || windowCanResizeS)
+        else if((windowCanResizeN || windowCanResizeS) || (windowResizeN || windowResizeS))
             SetCursorType(CURSOR_TYPE_SIZE_UPDOWN);
-        else if(windowCanResizeW || windowCanResizeE)
+        else if((windowCanResizeW || windowCanResizeE) || (windowResizeW || windowResizeE))
             SetCursorType(CURSOR_TYPE_SIZE_LEFTRIGHT); 
 
         // Check if the window should be dragged
         if(CursorPressed() && 
-           cursorPos.x >= windowXPos + RESIZE_MARGIN && 
-           cursorPos.x <= windowXPos + RESIZE_MARGIN + 100 && 
-           cursorPos.y >= windowYPos + RESIZE_MARGIN && 
-           cursorPos.y <= windowYPos + RESIZE_MARGIN + 20)
+           cursorPos.x >= windowXPos + WINDOW_MARGIN && 
+           cursorPos.x <= windowXPos + WINDOW_MARGIN + 100 && 
+           cursorPos.y >= windowYPos + WINDOW_MARGIN && 
+           cursorPos.y <= windowYPos + WINDOW_MARGIN + 20)
             windowDrag = true;
-
-        // Check the window resize flags for every dimension
-        windowCanResizeN = cursorPos.x >= windowXPos && 
-                           cursorPos.x <= windowXPos + windowWidth && 
-                           cursorPos.y >= windowYPos + 20 + RESIZE_MARGIN && 
-                           cursorPos.y <= windowYPos + 20 + 3 * RESIZE_MARGIN;
-        windowCanResizeS = cursorPos.x >= windowXPos && 
-                           cursorPos.x <= windowXPos + windowWidth && 
-                           cursorPos.y >= windowYPos + windowHeight - RESIZE_MARGIN && 
-                           cursorPos.y <= windowYPos + windowHeight + RESIZE_MARGIN;
-        windowCanResizeW = cursorPos.x >= windowXPos - RESIZE_MARGIN && 
-                           cursorPos.x <= windowXPos + RESIZE_MARGIN && 
-                           cursorPos.y >= windowYPos && 
-                           cursorPos.y <= windowYPos + windowHeight;
-        windowCanResizeE = cursorPos.x >= windowXPos + windowWidth - RESIZE_MARGIN && 
-                           cursorPos.x <= windowXPos + windowWidth + RESIZE_MARGIN && 
-                           cursorPos.y >= windowYPos && 
-                           cursorPos.y <= windowYPos + windowHeight;
         
         if(CursorPressed() && windowCanResizeN)
             windowResizeN = true;
@@ -223,32 +227,32 @@ namespace wfe::editor {
         float32_t blueFgd = (foregroundColor & 0xff) / 255.f;
 
         // Create the top bar of the window; placeholder width at 100
-        mesh.vertices.push_back({ { (float32_t)windowXPos + RESIZE_MARGIN,       (float32_t)windowYPos + RESIZE_MARGIN      }, { 0.f, 0.f }, { redFgd, greenFgd, blueFgd, 1.f } });
-        mesh.vertices.push_back({ { (float32_t)windowXPos + RESIZE_MARGIN + 100, (float32_t)windowYPos + RESIZE_MARGIN      }, { 0.f, 0.f }, { redFgd, greenFgd, blueFgd, 1.f } });
-        mesh.vertices.push_back({ { (float32_t)windowXPos + RESIZE_MARGIN + 100, (float32_t)windowYPos + RESIZE_MARGIN + 20 }, { 0.f, 0.f }, { redFgd, greenFgd, blueFgd, 1.f } });
-        mesh.vertices.push_back({ { (float32_t)windowXPos + RESIZE_MARGIN,       (float32_t)windowYPos + RESIZE_MARGIN + 20 }, { 0.f, 0.f }, { redFgd, greenFgd, blueFgd, 1.f } });
+        mesh.vertices.push_back({ { (float32_t)windowXPos + WINDOW_MARGIN,       (float32_t)windowYPos + WINDOW_MARGIN      }, { 0.f, 0.f }, { redFgd, greenFgd, blueFgd, 1.f } });
+        mesh.vertices.push_back({ { (float32_t)windowXPos + WINDOW_MARGIN + 100, (float32_t)windowYPos + WINDOW_MARGIN      }, { 0.f, 0.f }, { redFgd, greenFgd, blueFgd, 1.f } });
+        mesh.vertices.push_back({ { (float32_t)windowXPos + WINDOW_MARGIN + 100, (float32_t)windowYPos + WINDOW_MARGIN + 20 }, { 0.f, 0.f }, { redFgd, greenFgd, blueFgd, 1.f } });
+        mesh.vertices.push_back({ { (float32_t)windowXPos + WINDOW_MARGIN,       (float32_t)windowYPos + WINDOW_MARGIN + 20 }, { 0.f, 0.f }, { redFgd, greenFgd, blueFgd, 1.f } });
 
         mesh.indices.push_back(0); mesh.indices.push_back(1); mesh.indices.push_back(3);
         mesh.indices.push_back(1); mesh.indices.push_back(2); mesh.indices.push_back(3);
 
         // Create the main window body
-        mesh.vertices.push_back({ { (float32_t)windowXPos + RESIZE_MARGIN,               (float32_t)windowYPos + 2 * RESIZE_MARGIN + 20       }, { 0.f, 0.f }, { redFgd, greenFgd, blueFgd, 1.f } });
-        mesh.vertices.push_back({ { (float32_t)windowXPos + windowWidth - RESIZE_MARGIN, (float32_t)windowYPos + 2 * RESIZE_MARGIN + 20       }, { 0.f, 0.f }, { redFgd, greenFgd, blueFgd, 1.f } });
-        mesh.vertices.push_back({ { (float32_t)windowXPos + windowWidth - RESIZE_MARGIN, (float32_t)windowYPos + windowHeight - RESIZE_MARGIN }, { 0.f, 0.f }, { redFgd, greenFgd, blueFgd, 1.f } });
-        mesh.vertices.push_back({ { (float32_t)windowXPos + RESIZE_MARGIN,               (float32_t)windowYPos + windowHeight - RESIZE_MARGIN }, { 0.f, 0.f }, { redFgd, greenFgd, blueFgd, 1.f } });
+        mesh.vertices.push_back({ { (float32_t)windowXPos + WINDOW_MARGIN,               (float32_t)windowYPos + 2 * WINDOW_MARGIN + 20       }, { 0.f, 0.f }, { redFgd, greenFgd, blueFgd, 1.f } });
+        mesh.vertices.push_back({ { (float32_t)windowXPos + windowWidth - WINDOW_MARGIN, (float32_t)windowYPos + 2 * WINDOW_MARGIN + 20       }, { 0.f, 0.f }, { redFgd, greenFgd, blueFgd, 1.f } });
+        mesh.vertices.push_back({ { (float32_t)windowXPos + windowWidth - WINDOW_MARGIN, (float32_t)windowYPos + windowHeight - WINDOW_MARGIN }, { 0.f, 0.f }, { redFgd, greenFgd, blueFgd, 1.f } });
+        mesh.vertices.push_back({ { (float32_t)windowXPos + WINDOW_MARGIN,               (float32_t)windowYPos + windowHeight - WINDOW_MARGIN }, { 0.f, 0.f }, { redFgd, greenFgd, blueFgd, 1.f } });
 
         mesh.indices.push_back(4); mesh.indices.push_back(5); mesh.indices.push_back(7);
         mesh.indices.push_back(5); mesh.indices.push_back(6); mesh.indices.push_back(7);
 
         // Create the window edge 
-        mesh.vertices.push_back({ { (float32_t)windowXPos + RESIZE_MARGIN,           (float32_t)windowYPos + RESIZE_MARGIN          }, { 0.f, 0.f }, { redE, greenE, blueE, 1.f } });
-        mesh.vertices.push_back({ { (float32_t)windowXPos + RESIZE_MARGIN + 100,     (float32_t)windowYPos + RESIZE_MARGIN          }, { 0.f, 0.f }, { redE, greenE, blueE, 1.f } });
-        mesh.vertices.push_back({ { (float32_t)windowXPos + RESIZE_MARGIN + 100,     (float32_t)windowYPos + RESIZE_MARGIN + 20     }, { 0.f, 0.f }, { redE, greenE, blueE, 1.f } });
-        mesh.vertices.push_back({ { (float32_t)windowXPos + RESIZE_MARGIN,           (float32_t)windowYPos + RESIZE_MARGIN + 20     }, { 0.f, 0.f }, { redE, greenE, blueE, 1.f } });
+        mesh.vertices.push_back({ { (float32_t)windowXPos + WINDOW_MARGIN,           (float32_t)windowYPos + WINDOW_MARGIN          }, { 0.f, 0.f }, { redE, greenE, blueE, 1.f } });
+        mesh.vertices.push_back({ { (float32_t)windowXPos + WINDOW_MARGIN + 100,     (float32_t)windowYPos + WINDOW_MARGIN          }, { 0.f, 0.f }, { redE, greenE, blueE, 1.f } });
+        mesh.vertices.push_back({ { (float32_t)windowXPos + WINDOW_MARGIN + 100,     (float32_t)windowYPos + WINDOW_MARGIN + 20     }, { 0.f, 0.f }, { redE, greenE, blueE, 1.f } });
+        mesh.vertices.push_back({ { (float32_t)windowXPos + WINDOW_MARGIN,           (float32_t)windowYPos + WINDOW_MARGIN + 20     }, { 0.f, 0.f }, { redE, greenE, blueE, 1.f } });
         mesh.vertices.push_back({ { (float32_t)windowXPos,                           (float32_t)windowYPos                          }, { 0.f, 0.f }, { redE, greenE, blueE, 1.f } });
-        mesh.vertices.push_back({ { (float32_t)windowXPos + 100 + 2 * RESIZE_MARGIN, (float32_t)windowYPos                          }, { 0.f, 0.f }, { redE, greenE, blueE, 1.f } });
-        mesh.vertices.push_back({ { (float32_t)windowXPos + 100 + 2 * RESIZE_MARGIN, (float32_t)windowYPos + 2 * RESIZE_MARGIN + 20 }, { 0.f, 0.f }, { redE, greenE, blueE, 1.f } });
-        mesh.vertices.push_back({ { (float32_t)windowXPos,                           (float32_t)windowYPos + 2 * RESIZE_MARGIN + 20 }, { 0.f, 0.f }, { redE, greenE, blueE, 1.f } });
+        mesh.vertices.push_back({ { (float32_t)windowXPos + 100 + 2 * WINDOW_MARGIN, (float32_t)windowYPos                          }, { 0.f, 0.f }, { redE, greenE, blueE, 1.f } });
+        mesh.vertices.push_back({ { (float32_t)windowXPos + 100 + 2 * WINDOW_MARGIN, (float32_t)windowYPos + 2 * WINDOW_MARGIN + 20 }, { 0.f, 0.f }, { redE, greenE, blueE, 1.f } });
+        mesh.vertices.push_back({ { (float32_t)windowXPos,                           (float32_t)windowYPos + 2 * WINDOW_MARGIN + 20 }, { 0.f, 0.f }, { redE, greenE, blueE, 1.f } });
 
         mesh.indices.push_back(12); mesh.indices.push_back(8 ); mesh.indices.push_back(15);
         mesh.indices.push_back(8 ); mesh.indices.push_back(11); mesh.indices.push_back(15);
@@ -259,12 +263,12 @@ namespace wfe::editor {
         mesh.indices.push_back(12); mesh.indices.push_back(9 ); mesh.indices.push_back(8 );
         mesh.indices.push_back(12); mesh.indices.push_back(13); mesh.indices.push_back(9 );
 
-        mesh.vertices.push_back({ { (float32_t)windowXPos + RESIZE_MARGIN,               (float32_t)windowYPos + 2 * RESIZE_MARGIN + 20       }, { 0.f, 0.f }, { redE, greenE, blueE, 1.f } });
-        mesh.vertices.push_back({ { (float32_t)windowXPos + windowWidth - RESIZE_MARGIN, (float32_t)windowYPos + 2 * RESIZE_MARGIN + 20       }, { 0.f, 0.f }, { redE, greenE, blueE, 1.f } });
-        mesh.vertices.push_back({ { (float32_t)windowXPos + windowWidth - RESIZE_MARGIN, (float32_t)windowYPos + windowHeight - RESIZE_MARGIN }, { 0.f, 0.f }, { redE, greenE, blueE, 1.f } });
-        mesh.vertices.push_back({ { (float32_t)windowXPos + RESIZE_MARGIN,               (float32_t)windowYPos + windowHeight - RESIZE_MARGIN }, { 0.f, 0.f }, { redE, greenE, blueE, 1.f } });
-        mesh.vertices.push_back({ { (float32_t)windowXPos,                               (float32_t)windowYPos + RESIZE_MARGIN + 20           }, { 0.f, 0.f }, { redE, greenE, blueE, 1.f } });
-        mesh.vertices.push_back({ { (float32_t)windowXPos + windowWidth,                 (float32_t)windowYPos + RESIZE_MARGIN + 20           }, { 0.f, 0.f }, { redE, greenE, blueE, 1.f } });
+        mesh.vertices.push_back({ { (float32_t)windowXPos + WINDOW_MARGIN,               (float32_t)windowYPos + 2 * WINDOW_MARGIN + 20       }, { 0.f, 0.f }, { redE, greenE, blueE, 1.f } });
+        mesh.vertices.push_back({ { (float32_t)windowXPos + windowWidth - WINDOW_MARGIN, (float32_t)windowYPos + 2 * WINDOW_MARGIN + 20       }, { 0.f, 0.f }, { redE, greenE, blueE, 1.f } });
+        mesh.vertices.push_back({ { (float32_t)windowXPos + windowWidth - WINDOW_MARGIN, (float32_t)windowYPos + windowHeight - WINDOW_MARGIN }, { 0.f, 0.f }, { redE, greenE, blueE, 1.f } });
+        mesh.vertices.push_back({ { (float32_t)windowXPos + WINDOW_MARGIN,               (float32_t)windowYPos + windowHeight - WINDOW_MARGIN }, { 0.f, 0.f }, { redE, greenE, blueE, 1.f } });
+        mesh.vertices.push_back({ { (float32_t)windowXPos,                               (float32_t)windowYPos + WINDOW_MARGIN + 20           }, { 0.f, 0.f }, { redE, greenE, blueE, 1.f } });
+        mesh.vertices.push_back({ { (float32_t)windowXPos + windowWidth,                 (float32_t)windowYPos + WINDOW_MARGIN + 20           }, { 0.f, 0.f }, { redE, greenE, blueE, 1.f } });
         mesh.vertices.push_back({ { (float32_t)windowXPos + windowWidth,                 (float32_t)windowYPos + windowHeight                 }, { 0.f, 0.f }, { redE, greenE, blueE, 1.f } });
         mesh.vertices.push_back({ { (float32_t)windowXPos,                               (float32_t)windowYPos + windowHeight                 }, { 0.f, 0.f }, { redE, greenE, blueE, 1.f } });
 
