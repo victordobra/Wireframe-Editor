@@ -7,7 +7,8 @@ namespace wfe::editor {
     uint32_t foregroundColor = 0x444444;
     uint32_t highlightColor = 0x999999;
     uint32_t textColor = 0xeeeeff;
-    uint32_t dockingColor = 0x000077;
+    uint32_t dockingColor = 0x3377cc;
+    uint32_t dockPreviewColor = 0x5599ee;
 
     // Functions
     void LoadColors() {
@@ -22,6 +23,7 @@ namespace wfe::editor {
         input.ReadBuffer((char_t*)&highlightColor, sizeof(uint32_t));
         input.ReadBuffer((char_t*)&textColor, sizeof(uint32_t));
         input.ReadBuffer((char_t*)&dockingColor, sizeof(uint32_t));
+        input.ReadBuffer((char_t*)&dockPreviewColor, sizeof(uint32_t));
 
         input.Close();
     }
@@ -34,6 +36,7 @@ namespace wfe::editor {
         output.WriteBuffer((char_t*)&highlightColor, sizeof(uint32_t));
         output.WriteBuffer((char_t*)&textColor, sizeof(uint32_t));
         output.WriteBuffer((char_t*)&dockingColor, sizeof(uint32_t));
+        output.WriteBuffer((char_t*)&dockPreviewColor, sizeof(uint32_t));
 
         output.Close();
     }
@@ -56,6 +59,9 @@ namespace wfe::editor {
     uint32_t GetDockingColor() {
         return dockingColor;
     }
+    uint32_t GetDockPreviewColor() {
+        return dockPreviewColor;
+    }
 
     void SetBackgroundColor(uint32_t newColor) {
         backgroundColor = newColor;
@@ -74,5 +80,8 @@ namespace wfe::editor {
     }
     void SetDockingColor(uint32_t newColor) {
         dockingColor = newColor;
+    }
+    void SetDockPreviewColor(uint32_t newColor) {
+        dockPreviewColor = newColor;
     }
 }

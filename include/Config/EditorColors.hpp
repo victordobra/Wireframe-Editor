@@ -12,6 +12,7 @@ namespace wfe::editor {
     uint32_t GetHighlightColor();
     uint32_t GetTextColor();
     uint32_t GetDockingColor();
+    uint32_t GetDockPreviewColor();
 
     void SetBackgroundColor(uint32_t newColor);
     void SetEdgeColor(uint32_t newColor);
@@ -19,4 +20,5 @@ namespace wfe::editor {
     void SetHighlightColor(uint32_t newColor);
     void SetTextColor(uint32_t newColor);
     void SetDockingColor(uint32_t newColor);
+    void SetDockPreviewColor(uint32_t newColor);
 }
