@@ -75,4 +75,6 @@ namespace wfe::editor {
     void CopyImageToBuffer(VkImage image, VkBuffer buffer, uint32_t width, uint32_t height, uint32_t layerCount);
     /// @brief Pads the uniform buffer size to the nonCoherentAtomSize of the Vulkan physical device.
     size_t PadUniformBufferSize(size_t originalSize);
+    /// @brief Transitions the given Vulkan image's layout.
+    void TransitionImageLayout(VkImage image, VkImageLayout oldLayout, VkImageLayout newLayout, VkFormat format);
 }

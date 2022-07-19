@@ -25,10 +25,8 @@
 #include "MainWindow/WindowsMainWindow.hpp"
 #include "Vulkan/Device.hpp"
 #include "Vulkan/SwapChain.hpp"
-#include "IO/Cursor.hpp"
-#include "GUI/GUIPipeline.hpp"
-#include "GUI/Window.hpp"
-#include "Config/EditorColors.hpp"
+#include "ImGui/ImGuiContext.hpp"
+#include "ImGui/ImGuiPipeline.hpp"
 #include "Core.hpp"
 #include "ProjectInfo.hpp"
 
@@ -64,10 +62,6 @@ static COLORREF HexColorToWin32Hex(uint32_t color) {
 }
 
 static void RegisterApplicationClass() {
-    // Load the editor colors
-    wfe::editor::LoadColors();
-    wfe::editor::SaveColors();
-
     // Create the class info
     WNDCLASSEX wcex;
 
@@ -157,13 +151,7 @@ LRESULT CALLBACK WinProc(_In_ HWND hWindow, _In_ UINT message, _In_ WPARAM wPara
         UpdateWindowInfo();
         wfe::editor::CreateVulkanDevice();
         wfe::editor::CreateSwapChain({ (uint32_t)windowWidth, (uint32_t)windowHeight });
-        wfe::editor::CreateGUIPipeline();
-
-    {
-        wfe::editor::Window* window1 = new wfe::editor::Window();
-        wfe::editor::Window* window2 = new wfe::editor::Window();
-        window2->windowXPos = 400;
-    }
+        wfe::editor::CreateImGuiContext();
 
         return 0;
     case WM_GETMINMAXINFO:
@@ -241,23 +229,11 @@ LRESULT CALLBACK WinProc(_In_ HWND hWindow, _In_ UINT message, _In_ WPARAM wPara
     }
         return 0;
     case WM_MOUSEMOVE:
-        wfe::editor::UpdateCursorType();
-
         return 0;
     case WM_PAINT:
-        wfe::editor::UpdateInput();
-        wfe::editor::Draw();
-        wfe::editor::UpdateCursorType();
         return 0;
     case WM_CLOSE:
-        // Delete every window
-    {
-        auto windows = wfe::editor::Window::GetWindows();
-        for(auto* window : windows)
-            delete window;
-    }
-        
-        wfe::editor::DeleteGUIPipeline();
+        wfe::editor::DeleteImGuiContext();
         wfe::editor::DeleteSwapChain();
         wfe::editor::DeleteVulkanDevice();
 

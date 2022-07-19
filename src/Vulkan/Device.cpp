@@ -65,6 +65,7 @@ namespace wfe::editor {
     static void HasRequiredInstanceExtensions();
     static bool8_t CheckDeviceExtensionSupport(VkPhysicalDevice physicalDevice);
     static SwapChainSupportDetails QuerySwapChainSupport(VkPhysicalDevice physicalDevice);
+    static void SetStageAndAccess(VkImageLayout layout, VkAccessFlags& accessMask, VkPipelineStageFlags& stage);
 
     static bool8_t IsDeviceSuitable(VkPhysicalDevice physicalDevice) {
         QueueFamilyIndices indices = FindQueueFamilies(physicalDevice);
@@ -219,6 +220,30 @@ namespace wfe::editor {
                 console::OutFatalError((string)"Failed to get physical device surface present modes! Error code: " + VkResultToString(result), 1);
         }
         return details;
+    }
+    static void SetStageAndAccess(VkImageLayout layout, VkAccessFlags& accessMask, VkPipelineStageFlags& stage) {
+        // Check for every supported layout
+        switch(layout) {
+        case VK_IMAGE_LAYOUT_UNDEFINED:
+            accessMask = 0;
+            stage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+            break;
+        case VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL:
+            accessMask = VK_ACCESS_TRANSFER_READ_BIT;
+            stage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+            break;
+        case VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL:
+            accessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+            stage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+            break;
+        case VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL:
+            accessMask = VK_ACCESS_SHADER_READ_BIT;
+            stage = VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT;
+            break;
+        default:
+            console::OutFatalError("Unsupported image layout!", 1);
+            break;
+        }
     }
 
     static void CreateInstance() {
@@ -608,5 +633,34 @@ namespace wfe::editor {
             alignedSize = (alignedSize + minUboAlignment - 1) & ~(minUboAlignment - 1);
 
         return alignedSize;
+    }
+    void TransitionImageLayout(VkImage image, VkImageLayout oldLayout, VkImageLayout newLayout, VkFormat format) {
+        VkCommandBuffer commandBuffer = BeginSingleTimeCommands();
+
+        VkPipelineStageFlags srcStage, dstStage;
+        VkImageMemoryBarrier barrier;
+
+        barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+        barrier.pNext = nullptr;
+        
+        SetStageAndAccess(oldLayout, barrier.srcAccessMask, srcStage);
+        SetStageAndAccess(newLayout, barrier.dstAccessMask, dstStage);
+
+        barrier.oldLayout = oldLayout;
+        barrier.newLayout = newLayout;
+
+        barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+
+        barrier.image = image;
+        barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        barrier.subresourceRange.baseMipLevel = 0;
+        barrier.subresourceRange.levelCount = 1;
+        barrier.subresourceRange.baseArrayLayer = 0;
+        barrier.subresourceRange.layerCount = 1;
+
+        vkCmdPipelineBarrier(commandBuffer, srcStage, dstStage, 0, 0, nullptr, 0, nullptr, 1, &barrier);
+
+        EndSingleTimeCommands(commandBuffer);
     }
 }
