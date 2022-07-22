@@ -2,6 +2,7 @@
 
 #ifdef PLATFORM_WINDOWS
 
+#include "MainWindow/WindowsMainWindow.hpp"
 #include "ProjectInfo.hpp"
 #include "imgui.hpp"
 #include "Core.hpp"
@@ -89,7 +90,7 @@ static wfe::int32_t RunMessageLoop() {
     return (wfe::int32_t)msg.wParam;
 }
 
-// Wndows functions
+// Windows functions
 int main(int argc, char** args) {
     hInstance = GetModuleHandle(NULL);
 
@@ -115,7 +116,9 @@ LRESULT CALLBACK WinProc(_In_ HWND hWnd, _In_ UINT msg, _In_ WPARAM wParam, _In_
         
         break;
     case WM_SIZE:
-        ImGui::GetIO().DisplaySize = { (wfe::float32_t)GET_X_LPARAM(lParam), (wfe::float32_t)GET_Y_LPARAM(lParam) };
+        windowWidth = (wfe::size_t)GET_X_LPARAM(lParam);
+        windowHeight = (wfe::size_t)GET_Y_LPARAM(lParam);
+        ImGui::GetIO().DisplaySize = { (wfe::float32_t)windowWidth, (wfe::float32_t)windowHeight };
         break;
     case WM_MOUSEMOVE:
         ImGui::GetIO().AddMousePosEvent((wfe::float32_t)GET_X_LPARAM(lParam), (wfe::float32_t)GET_Y_LPARAM(lParam));
@@ -216,6 +219,21 @@ LRESULT CALLBACK WinProc(_In_ HWND hWnd, _In_ UINT msg, _In_ WPARAM wParam, _In_
     }
 
     return DefWindowProc(hWnd, msg, wParam, lParam);
+}
+
+// External functions
+wfe::size_t wfe::editor::GetMainWindowWidth() {
+    return windowWidth;
+}
+wfe::size_t wfe::editor::GetMainWindowHeight() {
+    return windowHeight;
+}
+
+HWND wfe::editor::GetWindowHandle() {
+    return hWnd;
+}
+HINSTANCE wfe::editor::GetWindowsInstance() {
+    return hInstance;
 }
 
 #endif
