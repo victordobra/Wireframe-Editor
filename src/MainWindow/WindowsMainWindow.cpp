@@ -3,13 +3,17 @@
 #ifdef PLATFORM_WINDOWS
 
 #include "ProjectInfo.hpp"
+#include "imgui.hpp"
 #include "Core.hpp"
+#include "Win32ToImGui.hpp"
 
-// WIndows include
+// Windows include
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
 #endif
+
 #include <windows.h>
+#include <windowsx.h>
 
 // Variables
 wfe::string className = "Application";
@@ -97,15 +101,118 @@ int main(int argc, char** args) {
 LRESULT CALLBACK WinProc(_In_ HWND hWnd, _In_ UINT msg, _In_ WPARAM wParam, _In_ LPARAM lParam) {
     switch(msg) {
     case WM_CREATE:
-        return 0;
+        // Configure ImGui
+        IMGUI_CHECKVERSION();
+        ImGui::CreateContext();
+
+        ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+
+        ImGui::GetIO().BackendPlatformName = "WFE-Win32-Backend";
+        ImGui::GetIO().BackendFlags |= ImGuiBackendFlags_HasMouseCursors;
+        ImGui::GetIO().BackendFlags |= ImGuiBackendFlags_HasSetMousePos;
+
+        ImGui::StyleColorsDark();
+        
+        break;
+    case WM_SIZE:
+        ImGui::GetIO().DisplaySize = { (wfe::float32_t)GET_X_LPARAM(lParam), (wfe::float32_t)GET_Y_LPARAM(lParam) };
+        break;
+    case WM_MOUSEMOVE:
+        ImGui::GetIO().AddMousePosEvent((wfe::float32_t)GET_X_LPARAM(lParam), (wfe::float32_t)GET_Y_LPARAM(lParam));
+        break;
+    case WM_LBUTTONDOWN: 
+    case WM_LBUTTONDBLCLK:
+        ImGui::GetIO().AddMouseButtonEvent(ImGuiMouseButton_Left, true);
+        break;
+    case WM_RBUTTONDOWN: 
+    case WM_RBUTTONDBLCLK:
+        ImGui::GetIO().AddMouseButtonEvent(ImGuiMouseButton_Right, true);
+        break;
+    case WM_MBUTTONDOWN: 
+    case WM_MBUTTONDBLCLK:
+        ImGui::GetIO().AddMouseButtonEvent(ImGuiMouseButton_Middle, true);
+        break;
+    case WM_LBUTTONUP:
+        ImGui::GetIO().AddMouseButtonEvent(ImGuiMouseButton_Left, false);
+        break;
+    case WM_RBUTTONUP:
+        ImGui::GetIO().AddMouseButtonEvent(ImGuiMouseButton_Right, false);
+        break;
+    case WM_MBUTTONUP:
+        ImGui::GetIO().AddMouseButtonEvent(ImGuiMouseButton_Middle, false);
+        break;
+    case WM_MOUSEWHEEL:
+        ImGui::GetIO().AddMouseWheelEvent(0.f, (wfe::float32_t)GET_WHEEL_DELTA_WPARAM(wParam) / WHEEL_DELTA);
+        break;
+    case WM_MOUSEHWHEEL:
+        ImGui::GetIO().AddMouseWheelEvent((wfe::float32_t)GET_WHEEL_DELTA_WPARAM(wParam) / WHEEL_DELTA, 0.f);
+        break;
+    case WM_KEYDOWN:
+    case WM_SYSKEYDOWN:
+    {
+        ImGuiKey key = Win32KeyToImGuiKey(wParam);
+        wfe::int32_t scancode = (wfe::int32_t)LOBYTE(HIWORD(lParam));
+
+        if(key != ImGuiKey_None) {
+            ImGui::GetIO().AddKeyEvent(key, true);
+            ImGui::GetIO().SetKeyEventNativeData(key, wParam, scancode);
+        }
+    }
+        break;
+    case WM_KEYUP:
+    case WM_SYSKEYUP:
+    {
+        ImGuiKey key = Win32KeyToImGuiKey(wParam);
+        wfe::int32_t scancode = (wfe::int32_t)LOBYTE(HIWORD(lParam));
+
+        if(key != ImGuiKey_None) {
+            ImGui::GetIO().AddKeyEvent(key, false);
+            ImGui::GetIO().SetKeyEventNativeData(key, wParam, scancode);
+        }
+    }
+        break;
+    case WM_SETFOCUS:
+        ImGui::GetIO().AddFocusEvent(true);
+        break;
+    case WM_KILLFOCUS:
+        ImGui::GetIO().AddFocusEvent(false);
+        break;
+    case WM_CHAR:
+        ImGui::GetIO().AddInputCharacter((wfe::char_t)wParam);
+        break;
+    case WM_SETCURSOR:
+    {
+        if(LOWORD(lParam) != HTCLIENT)
+            break;
+
+        if(ImGui::GetMouseCursor() == ImGuiMouseCursor_None || ImGui::GetIO().MouseDrawCursor) {
+            SetCursor(NULL);
+            return 1;
+        }
+
+        // Get the win32 cursor type
+        LPTSTR cursorType = ImGuiCursorToWin32CursorType(ImGui::GetMouseCursor());
+
+        // Load the cursor
+        HCURSOR cursor = LoadCursor(NULL, cursorType);
+        if(!cursor)
+            OutputLastWin32Error("Failed to load cursor!");
+
+        // Set the cursor
+        if(!SetCursor(cursor))
+            OutputLastWin32Error("Failed to set cursor!");
+    }
+        return 1;
     case WM_PAINT:
-        return 0;
+        break;
     case WM_CLOSE:
         DestroyWindow(hWnd);
-        return 0;
+        break;
     case WM_DESTROY:
+        ImGui::DestroyContext();
+
         PostQuitMessage(0);
-        return 0;
+        break;
     }
 
     return DefWindowProc(hWnd, msg, wParam, lParam);
