@@ -3,6 +3,7 @@
 #ifdef PLATFORM_WINDOWS
 
 #include "MainWindow/WindowsMainWindow.hpp"
+#include "Vulkan/Device.hpp"
 #include "ProjectInfo.hpp"
 #include "imgui.hpp"
 #include "Core.hpp"
@@ -55,6 +56,7 @@ static void RegisterClass() {
     // Try to register the class
     if(!RegisterClassEx(&wcex))
         OutputLastWin32Error("Failed to register class!");
+    wfe::console::OutMessageFunction("Registered Win32 class successfully.");
 }
 static void CreateHWnd() {
     // Create the window
@@ -73,6 +75,7 @@ static void CreateHWnd() {
     // Throw an error if the window wasn't created properly
     if(!hWnd)
         OutputLastWin32Error("Failed to create window!");
+    wfe::console::OutMessageFunction("Created Win32 window successfully.");
     
     // Show and update the window
     ShowWindow(hWnd, SW_SHOWNORMAL);
@@ -102,6 +105,9 @@ int main(int argc, char** args) {
 LRESULT CALLBACK WinProc(_In_ HWND hWnd, _In_ UINT msg, _In_ WPARAM wParam, _In_ LPARAM lParam) {
     switch(msg) {
     case WM_CREATE:
+        // Create all Vulkan objects
+        wfe::editor::CreateDevice();
+
         // Configure ImGui
         IMGUI_CHECKVERSION();
         ImGui::CreateContext();
@@ -213,6 +219,10 @@ LRESULT CALLBACK WinProc(_In_ HWND hWnd, _In_ UINT msg, _In_ WPARAM wParam, _In_
         break;
     case WM_DESTROY:
         ImGui::DestroyContext();
+
+        wfe::editor::DeleteDevice();
+
+        wfe::console::OutMessageFunction("Deleted Win32 window successfully.");
 
         PostQuitMessage(0);
         break;
