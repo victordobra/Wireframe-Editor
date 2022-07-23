@@ -196,6 +196,30 @@ namespace wfe::editor {
 
         return indices.IsComplete() && extensionsSupported && swapChainAdequate;
     }
+    static void SetStageAndAccess(VkImageLayout layout, VkAccessFlags& accessMask, VkPipelineStageFlags& stage) {
+        // Check for every supported layout
+        switch(layout) {
+        case VK_IMAGE_LAYOUT_UNDEFINED:
+            accessMask = 0;
+            stage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+            break;
+        case VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL:
+            accessMask = VK_ACCESS_TRANSFER_READ_BIT;
+            stage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+            break;
+        case VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL:
+            accessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+            stage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+            break;
+        case VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL:
+            accessMask = VK_ACCESS_SHADER_READ_BIT;
+            stage = VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT;
+            break;
+        default:
+            console::OutFatalError("Unsupported image layout!", 1);
+            break;
+        }
+    }
 
     static void CreateInstance() {
         // Check if the instance has the required extensions
@@ -338,7 +362,63 @@ namespace wfe::editor {
         }
 
         // Set the physical device fratures
-        VkPhysicalDeviceFeatures physicalDeviceFeatues{};
+        VkPhysicalDeviceFeatures physicalDeviceFeatues;
+
+        physicalDeviceFeatues.robustBufferAccess = VK_FALSE;
+        physicalDeviceFeatues.fullDrawIndexUint32 = VK_FALSE;
+        physicalDeviceFeatues.imageCubeArray = VK_FALSE;
+        physicalDeviceFeatues.independentBlend = VK_FALSE;
+        physicalDeviceFeatues.geometryShader = VK_FALSE;
+        physicalDeviceFeatues.tessellationShader = VK_FALSE;
+        physicalDeviceFeatues.sampleRateShading = VK_FALSE;
+        physicalDeviceFeatues.dualSrcBlend = VK_FALSE;
+        physicalDeviceFeatues.logicOp = VK_FALSE;
+        physicalDeviceFeatues.multiDrawIndirect = VK_FALSE;
+        physicalDeviceFeatues.drawIndirectFirstInstance = VK_FALSE;
+        physicalDeviceFeatues.depthClamp = VK_FALSE;
+        physicalDeviceFeatues.depthBiasClamp = VK_FALSE;
+        physicalDeviceFeatues.fillModeNonSolid = VK_FALSE;
+        physicalDeviceFeatues.depthBounds = VK_FALSE;
+        physicalDeviceFeatues.wideLines = VK_FALSE;
+        physicalDeviceFeatues.largePoints = VK_FALSE;
+        physicalDeviceFeatues.alphaToOne = VK_FALSE;
+        physicalDeviceFeatues.multiViewport = VK_FALSE;
+        physicalDeviceFeatues.samplerAnisotropy = VK_FALSE;
+        physicalDeviceFeatues.textureCompressionETC2 = VK_FALSE;
+        physicalDeviceFeatues.textureCompressionASTC_LDR = VK_FALSE;
+        physicalDeviceFeatues.textureCompressionBC = VK_FALSE;
+        physicalDeviceFeatues.occlusionQueryPrecise = VK_FALSE;
+        physicalDeviceFeatues.pipelineStatisticsQuery = VK_FALSE;
+        physicalDeviceFeatues.vertexPipelineStoresAndAtomics = VK_FALSE;
+        physicalDeviceFeatues.fragmentStoresAndAtomics = VK_FALSE;
+        physicalDeviceFeatues.shaderTessellationAndGeometryPointSize = VK_FALSE;
+        physicalDeviceFeatues.shaderImageGatherExtended = VK_FALSE;
+        physicalDeviceFeatues.shaderStorageImageExtendedFormats = VK_FALSE;
+        physicalDeviceFeatues.shaderStorageImageMultisample = VK_FALSE;
+        physicalDeviceFeatues.shaderStorageImageReadWithoutFormat = VK_FALSE;
+        physicalDeviceFeatues.shaderStorageImageWriteWithoutFormat = VK_FALSE;
+        physicalDeviceFeatues.shaderUniformBufferArrayDynamicIndexing = VK_FALSE;
+        physicalDeviceFeatues.shaderSampledImageArrayDynamicIndexing = VK_FALSE;
+        physicalDeviceFeatues.shaderStorageBufferArrayDynamicIndexing = VK_FALSE;
+        physicalDeviceFeatues.shaderStorageImageArrayDynamicIndexing = VK_FALSE;
+        physicalDeviceFeatues.shaderClipDistance = VK_FALSE;
+        physicalDeviceFeatues.shaderCullDistance = VK_FALSE;
+        physicalDeviceFeatues.shaderFloat64 = VK_FALSE;
+        physicalDeviceFeatues.shaderInt64 = VK_FALSE;
+        physicalDeviceFeatues.shaderInt16 = VK_FALSE;
+        physicalDeviceFeatues.shaderResourceResidency = VK_FALSE;
+        physicalDeviceFeatues.shaderResourceMinLod = VK_FALSE;
+        physicalDeviceFeatues.sparseBinding = VK_FALSE;
+        physicalDeviceFeatues.sparseResidencyBuffer = VK_FALSE;
+        physicalDeviceFeatues.sparseResidencyImage2D = VK_FALSE;
+        physicalDeviceFeatues.sparseResidencyImage3D = VK_FALSE;
+        physicalDeviceFeatues.sparseResidency2Samples = VK_FALSE;
+        physicalDeviceFeatues.sparseResidency4Samples = VK_FALSE;
+        physicalDeviceFeatues.sparseResidency8Samples = VK_FALSE;
+        physicalDeviceFeatues.sparseResidency16Samples = VK_FALSE;
+        physicalDeviceFeatues.sparseResidencyAliased = VK_FALSE;
+        physicalDeviceFeatues.variableMultisampleRate = VK_FALSE;
+        physicalDeviceFeatues.inheritedQueries = VK_FALSE;
 
         // Set the device create info
         VkDeviceCreateInfo createInfo;
@@ -388,6 +468,7 @@ namespace wfe::editor {
         console::OutMessageFunction("Created Vulkan command pool successfully.");
     }
 
+    // Public functions
     void CreateDevice() {
         CreateInstance();
         SetupDebugMessenger();
@@ -404,5 +485,342 @@ namespace wfe::editor {
         vkDestroyInstance(instance, allocator);
 
         console::OutMessageFunction("Deleted Vulkan instance successfully.");
+    }
+
+    VkInstance GetVulkanInstance() {
+        return instance;
+    }
+    VkPhysicalDevice GetPhysicalDevice() {
+        return physicalDevice;
+    }
+    VkCommandPool GetCommandPool() {
+        return commandPool;
+    }
+    VkDevice GetDevice() {
+        return device;
+    }
+    VkSurfaceKHR GetSurface() {
+        return surface;
+    }
+    VkQueue GetGraphicsQueue() {
+        return graphicsQueue;
+    }
+    VkQueue GetPresentQueue() {
+        return presentQueue;
+    }
+    const VkPhysicalDeviceProperties& GetDeviceProperties() {
+        return physicalDeviceProperties;
+    }
+
+    SwapChainSupportDetails GetSwapChainSupport() {
+        return QuerySwapChainSupport(physicalDevice);
+    }
+    QueueFamilyIndices FindPhysicalQueueFamilies() {
+        return FindQueueFamilies(physicalDevice);
+    }
+
+    uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) {
+        // Get the physical device's memory properties
+        VkPhysicalDeviceMemoryProperties memoryProperties;
+        vkGetPhysicalDeviceMemoryProperties(physicalDevice, &memoryProperties);
+
+        for(uint32_t i = 0; i < memoryProperties.memoryTypeCount; ++i)
+            if((typeFilter & (1 << i)) && (memoryProperties.memoryTypes[i].propertyFlags & properties) == properties)
+                return i;
+        
+        // No suitable memory types were found; throw an error
+        console::OutFatalError("Failed to find suitable memory type!", 1);
+        return 0;
+    }
+    VkFormat FindSupportedFormat(const vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features) {
+        for(const auto& candidate : candidates) {
+            // Get the format properties
+            VkFormatProperties formatProperties;
+            vkGetPhysicalDeviceFormatProperties(physicalDevice, candidate, &formatProperties);
+
+            // Return the candidate if the format has the required fratures
+            if((tiling == VK_IMAGE_TILING_LINEAR && (formatProperties.linearTilingFeatures & features) == features) || (tiling == VK_IMAGE_TILING_OPTIMAL && (formatProperties.optimalTilingFeatures & features) == features))
+                return candidate;
+        }
+
+        // No supported formats were found; throw an error
+        console::OutFatalError("Failed to find supported format!", 1);
+        return VK_FORMAT_UNDEFINED;
+    }
+
+    void CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory) {
+        // Set the buffer create info
+        VkBufferCreateInfo bufferCreateInfo;
+
+        bufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+        bufferCreateInfo.pNext = nullptr;
+        bufferCreateInfo.flags = 0;
+        bufferCreateInfo.size = size;
+        bufferCreateInfo.usage = usage;
+        bufferCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+        bufferCreateInfo.queueFamilyIndexCount = 0;
+        bufferCreateInfo.pQueueFamilyIndices = nullptr;
+
+        // Create the buffer
+        auto result = vkCreateBuffer(device, &bufferCreateInfo, allocator, &buffer);
+        if(result != VK_SUCCESS)
+            console::OutFatalError((string)"Failed to create buffer! Error code" + VkResultToString(result), 1);
+
+        // Get the buffer's memory requirements
+        VkMemoryRequirements memoryRequirements;
+        vkGetBufferMemoryRequirements(device, buffer, &memoryRequirements);
+
+        // Set the memory allocate info
+        VkMemoryAllocateInfo memoryAllocateInfo;
+
+        memoryAllocateInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+        memoryAllocateInfo.pNext = nullptr;
+        memoryAllocateInfo.allocationSize = memoryRequirements.size;
+        memoryAllocateInfo.memoryTypeIndex = FindMemoryType(memoryRequirements.memoryTypeBits, properties);
+
+        // Allocate the buffer's memory
+        result = vkAllocateMemory(device, &memoryAllocateInfo, allocator, &bufferMemory);
+        if(result != VK_SUCCESS)
+            console::OutFatalError((string)"Failed to allocate buffer memory! Error code: " + VkResultToString(result), 1);
+        
+        // Bind the buffer's memory
+        result = vkBindBufferMemory(device, buffer, bufferMemory, 0);
+        if(result != VK_SUCCESS)
+            console::OutFatalError((string)"Failed to bind buffer memory! Error code: " + VkResultToString(result), 1);
+    }
+    void CreateImage(const VkImageCreateInfo& imageInfo, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory) {
+        // Create the image
+        auto result = vkCreateImage(device, &imageInfo, allocator, &image);
+        if(result != VK_SUCCESS)
+            console::OutFatalError((string)"Failed to create image! Error code: " + VkResultToString(result), 1);
+        
+        // Get the image's memory requirements
+        VkMemoryRequirements memoryRequirements;
+        vkGetImageMemoryRequirements(device, image, &memoryRequirements);
+
+        // Set the memory allocate info
+        VkMemoryAllocateInfo memoryAllocateInfo;
+
+        memoryAllocateInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+        memoryAllocateInfo.pNext = nullptr;
+        memoryAllocateInfo.allocationSize = memoryRequirements.size;
+        memoryAllocateInfo.memoryTypeIndex = FindMemoryType(memoryRequirements.memoryTypeBits, properties);
+
+        // Allocate the image's memory
+        result = vkAllocateMemory(device, &memoryAllocateInfo, allocator, &imageMemory);
+        if(result != VK_SUCCESS)
+            console::OutFatalError((string)"Failed to allocate image memory! Error code: " + VkResultToString(result), 1);
+        
+        // Bind the image's memory
+        result = vkBindImageMemory(device, image, imageMemory, 0);
+        if(result != VK_SUCCESS)
+            console::OutFatalError((string)"Failed to bind image memory! Error code: " + VkResultToString(result), 1);
+    }
+    VkCommandBuffer BeginSingleTimeCommands() {
+        // Set the command buffer allocate info
+        VkCommandBufferAllocateInfo allocateInfo;
+
+        allocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+        allocateInfo.pNext = nullptr;
+        allocateInfo.commandPool = commandPool;
+        allocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+        allocateInfo.commandBufferCount = 1;
+
+        // Allocate the command buffer
+        VkCommandBuffer commandBuffer;
+        auto result = vkAllocateCommandBuffers(device, &allocateInfo, &commandBuffer);
+        if(result != VK_SUCCESS)
+            console::OutFatalError((string)"Failed to allocate command buffer! Error code: " + VkResultToString(result), 1);
+        
+        // Set the begin info
+        VkCommandBufferBeginInfo beginInfo;
+
+        beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+        beginInfo.pNext = nullptr;
+        beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+        beginInfo.pInheritanceInfo = nullptr;
+
+        // Begin recording the command buffer
+        result = vkBeginCommandBuffer(commandBuffer, &beginInfo);
+        if(result != VK_SUCCESS)
+            console::OutFatalError((string)"Failed to begin recording command buffer! Error code: " + VkResultToString(result), 1);
+        
+        return commandBuffer;
+    }
+    void EndSingleTimeCommands(VkCommandBuffer commandBuffer) {
+        // End recording the command buffer
+        auto result = vkEndCommandBuffer(commandBuffer);
+        if(result != VK_SUCCESS)
+            console::OutFatalError((string)"Failed to end recording command buffer! Error code: " + VkResultToString(result), 1);
+
+        // Set the command buffer submit info
+        VkSubmitInfo submitInfo;
+
+        submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+        submitInfo.pNext = nullptr;
+        submitInfo.waitSemaphoreCount = 0;
+        submitInfo.pWaitSemaphores = nullptr;
+        submitInfo.pWaitDstStageMask = nullptr;
+        submitInfo.commandBufferCount = 1;
+        submitInfo.pCommandBuffers = &commandBuffer;
+        submitInfo.signalSemaphoreCount = 0;
+        submitInfo.pSignalSemaphores = nullptr;
+
+        // Submit the command buffer
+        result = vkQueueSubmit(graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
+        if(result != VK_SUCCESS)
+            console::OutFatalError((string)"Failed to submit to queue! Error code: " + VkResultToString(result), 1);
+        
+        // Wait for the queue to idle
+        vkQueueWaitIdle(graphicsQueue);
+
+        // Free the command buffer
+        vkFreeCommandBuffers(device, commandPool, 1, &commandBuffer);
+    }
+    void CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size, VkCommandBuffer commandBuffer) {
+        // Begin single time commands if the command buffer's not set
+        bool8_t singleTimeCommands = !commandBuffer;
+        if(singleTimeCommands)
+            commandBuffer = BeginSingleTimeCommands();
+        
+        // Set the copy region
+        VkBufferCopy copyRegion;
+
+        copyRegion.srcOffset = 0;
+        copyRegion.dstOffset = 0;
+        copyRegion.size = size;
+
+        // Copy the buffer
+        vkCmdCopyBuffer(commandBuffer, srcBuffer, dstBuffer, 1, &copyRegion);
+
+        // End single time commands if the command buffer's not set
+        if(singleTimeCommands)
+            EndSingleTimeCommands(commandBuffer);
+    }
+    void CopyImage(VkImage srcImage, VkImage dstImage, uint32_t width, uint32_t height, uint32_t srcLayerCount, uint32_t dstLayerCount, VkCommandBuffer commandBuffer) {
+        // Begin single time commands if the command buffer's not set
+        bool8_t singleTimeCommands = !commandBuffer;
+        if(singleTimeCommands)
+            commandBuffer = BeginSingleTimeCommands();
+
+        // Set the copy region
+        VkImageCopy region;
+
+        region.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        region.srcSubresource.mipLevel = 0;
+        region.srcSubresource.baseArrayLayer = 0;
+        region.srcSubresource.layerCount = srcLayerCount;
+        region.srcOffset = { 0, 0, 0 };
+
+        region.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        region.dstSubresource.mipLevel = 0;
+        region.dstSubresource.baseArrayLayer = 0;
+        region.dstSubresource.layerCount = dstLayerCount;
+        region.dstOffset = { 0, 0, 0 };
+
+        region.extent = { width, height, 1 };
+
+        // Copy the image
+        vkCmdCopyImage(commandBuffer, srcImage, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, dstImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
+
+        // End single time commands if the command buffer's not set
+        if(singleTimeCommands)
+            EndSingleTimeCommands(commandBuffer);
+    }
+    void CopyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height, uint32_t layerCount, VkCommandBuffer commandBuffer) {
+        // Begin single time commands if the command buffer's not set
+        bool8_t singleTimeCommands = !commandBuffer;
+        if(singleTimeCommands)
+            commandBuffer = BeginSingleTimeCommands();
+
+        // Set the copy region
+        VkBufferImageCopy region;
+        region.bufferOffset = 0;
+        region.bufferRowLength = 0;
+        region.bufferImageHeight = 0;
+
+        region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        region.imageSubresource.mipLevel = 0;
+        region.imageSubresource.baseArrayLayer = 0;
+        region.imageSubresource.layerCount = layerCount;
+
+        region.imageOffset = { 0, 0, 0 };
+        region.imageExtent = { width, height, 1 };
+
+        // Copy the buffer to the image
+        vkCmdCopyBufferToImage(commandBuffer, buffer, image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
+
+        // End single time commands if the command buffer's not set
+        if(singleTimeCommands)
+            EndSingleTimeCommands(commandBuffer);
+    }
+    void CopyImageToBuffer(VkImage image, VkBuffer buffer, uint32_t width, uint32_t height, uint32_t layerCount, VkCommandBuffer commandBuffer) {
+        // Begin single time commands if the command buffer's not set
+        bool8_t singleTimeCommands = !commandBuffer;
+        if(singleTimeCommands)
+            commandBuffer = BeginSingleTimeCommands();
+        
+        // Set the copy region
+        VkBufferImageCopy region;
+        region.bufferOffset = 0;
+        region.bufferRowLength = 0;
+        region.bufferImageHeight = 0;
+
+        region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        region.imageSubresource.mipLevel = 0;
+        region.imageSubresource.baseArrayLayer = 0;
+        region.imageSubresource.layerCount = layerCount;
+
+        region.imageOffset = { 0, 0, 0 };
+        region.imageExtent = { width, height, 1 };
+
+        // Copy the image to the buffer
+        vkCmdCopyImageToBuffer(commandBuffer, image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, buffer, 1, &region);
+
+        // End single time commands if the command buffer's not set
+        if(singleTimeCommands)
+            EndSingleTimeCommands(commandBuffer);
+    }
+    void TransitionImageLayout(VkImage image, VkImageLayout srcLayout, VkImageLayout dstLayout, VkFormat format, VkCommandBuffer commandBuffer) {
+        // Begin single time commands if the command buffer's not set
+        bool8_t singleTimeCommands = !commandBuffer;
+        if(singleTimeCommands)
+            commandBuffer = BeginSingleTimeCommands();
+        
+        VkPipelineStageFlags srcStage, dstStage;
+
+        // Set the image memory barrier
+        VkImageMemoryBarrier barrier;
+
+        barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+        barrier.pNext = nullptr;
+        
+        SetStageAndAccess(srcLayout, barrier.srcAccessMask, srcStage);
+        SetStageAndAccess(dstLayout, barrier.dstAccessMask, dstStage);
+
+        barrier.oldLayout = srcLayout;
+        barrier.newLayout = dstLayout;
+        barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+
+        barrier.image = image;
+        barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        barrier.subresourceRange.baseMipLevel = 0;
+        barrier.subresourceRange.levelCount = 1;
+        barrier.subresourceRange.baseArrayLayer = 0;
+        barrier.subresourceRange.layerCount = 1;
+
+        // Transition the image layout
+        vkCmdPipelineBarrier(commandBuffer, srcStage, dstStage, 0, 0, nullptr, 0, nullptr, 1, &barrier);
+
+        // End single time commands if the command buffer's not set
+        if(singleTimeCommands)
+            EndSingleTimeCommands(commandBuffer);
+    }
+    VkDeviceSize PadUniformBufferSize(VkDeviceSize originalSize, VkDeviceSize minOffsetAlignment) {
+        if(originalSize < physicalDeviceProperties.limits.nonCoherentAtomSize)
+            return physicalDeviceProperties.limits.nonCoherentAtomSize;
+        else
+            return (originalSize + physicalDeviceProperties.limits.minUniformBufferOffsetAlignment - 1) & ~(physicalDeviceProperties.limits.minUniformBufferOffsetAlignment - 1);
     }
 }
