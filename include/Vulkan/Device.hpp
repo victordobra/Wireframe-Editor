@@ -74,5 +74,5 @@ namespace wfe::editor {
     /// @brief Transitions the image's layout.
     void TransitionImageLayout(VkImage image, VkImageLayout srcLayout, VkImageLayout dstLayout, VkFormat format, VkCommandBuffer commandBuffer = nullptr);
     /// @brief Pads the uniform buffer size to the nonCoherentAtomSize of the Vulkan physical device.
-    VkDeviceSize PadUniformBufferSize(VkDeviceSize originalSize, VkDeviceSize minOffsetAlignment);
+    VkDeviceSize PadUniformBufferSize(VkDeviceSize originalSize);
 }

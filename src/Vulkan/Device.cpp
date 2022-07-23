@@ -817,7 +817,7 @@ namespace wfe::editor {
         if(singleTimeCommands)
             EndSingleTimeCommands(commandBuffer);
     }
-    VkDeviceSize PadUniformBufferSize(VkDeviceSize originalSize, VkDeviceSize minOffsetAlignment) {
+    VkDeviceSize PadUniformBufferSize(VkDeviceSize originalSize) {
         if(originalSize < physicalDeviceProperties.limits.nonCoherentAtomSize)
             return physicalDeviceProperties.limits.nonCoherentAtomSize;
         else
