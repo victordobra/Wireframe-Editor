@@ -65,7 +65,7 @@ namespace wfe::editor {
         return format == VK_FORMAT_D32_SFLOAT_S8_UINT || format == VK_FORMAT_D24_UNORM_S8_UINT;
     }
 
-    static void CreateSwapChainInternal() {
+    static void CreateSwapChainInternal(VkSwapchainKHR oldSwapchain = VK_NULL_HANDLE) {
         QueueFamilyIndices indices = FindPhysicalQueueFamilies();
         SwapChainSupportDetails swapChainSupport = GetSwapChainSupport();
 
@@ -107,7 +107,7 @@ namespace wfe::editor {
         createInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
         createInfo.presentMode = presentMode;
         createInfo.clipped = VK_TRUE;
-        createInfo.oldSwapchain = VK_NULL_HANDLE;
+        createInfo.oldSwapchain = oldSwapchain;
 
         // Create the swap chain
         auto result = vkCreateSwapchainKHR(GetDevice(), &createInfo, GetVulkanAllocator(), &swapChain);
@@ -369,6 +369,7 @@ namespace wfe::editor {
         CreateDepthResources();
         CreateRenderPass();
         CreateFramebuffers();
+        CreateSyncObjects();
     }
     void DeleteSwapChain() {
         for(size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; ++i)
@@ -394,6 +395,33 @@ namespace wfe::editor {
             vkDestroyImageView(GetDevice(), imageView, GetVulkanAllocator());
         
         vkDestroySwapchainKHR(GetDevice(), swapChain, GetVulkanAllocator());
+    }
+    void RecreateSwapChain() {
+        // Destroy every swap chain related object
+        for(auto framebuffer : swapChainFramebuffers)
+            vkDestroyFramebuffer(GetDevice(), framebuffer, GetVulkanAllocator());
+        
+        for(auto depthImageView : depthImageViews)
+            vkDestroyImageView(GetDevice(), depthImageView, GetVulkanAllocator());
+        for(auto depthImage : depthImages)
+            vkDestroyImage(GetDevice(), depthImage, GetVulkanAllocator());
+        for(auto depthImageMemory : depthImageMemories)
+            vkFreeMemory(GetDevice(), depthImageMemory, GetVulkanAllocator());
+        
+        for(auto imageView : swapChainImageViews)
+            vkDestroyImageView(GetDevice(), imageView, GetVulkanAllocator());
+        
+        // Store the old swapchain and create the new one
+        VkSwapchainKHR oldSwapChain = swapChain;
+        CreateSwapChainInternal(oldSwapChain);
+
+        // Delete the old swap chain
+        vkDestroySwapchainKHR(GetDevice(), oldSwapChain, GetVulkanAllocator());
+
+        // Create every swap chain related object
+        CreateImageViews();
+        CreateDepthResources();
+        CreateFramebuffers();
     }
 
     VkFramebuffer GetFrameBuffer(size_t index) {

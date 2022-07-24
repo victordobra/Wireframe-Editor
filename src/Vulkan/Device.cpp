@@ -111,7 +111,7 @@ namespace wfe::editor {
             console::OutFatalError((string)"Failed to find all required validation layers! Missing layers: " + missingLayers, 1);
     }
     static QueueFamilyIndices FindQueueFamilies(VkPhysicalDevice physicalDevice) {
-        QueueFamilyIndices indices;
+        QueueFamilyIndices indices{};
 
         // Find all queue families
         uint32_t queueFamilyCount;

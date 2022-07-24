@@ -129,6 +129,8 @@ LRESULT CALLBACK WinProc(_In_ HWND hWindow, _In_ UINT msg, _In_ WPARAM wParam, _
         windowWidth = (wfe::size_t)GET_X_LPARAM(lParam);
         windowHeight = (wfe::size_t)GET_Y_LPARAM(lParam);
         ImGui::GetIO().DisplaySize = { (wfe::float32_t)windowWidth, (wfe::float32_t)windowHeight };
+
+        wfe::editor::RecreateSwapChain();
         break;
     case WM_MOUSEMOVE:
         ImGui::GetIO().AddMousePosEvent((wfe::float32_t)GET_X_LPARAM(lParam), (wfe::float32_t)GET_Y_LPARAM(lParam));

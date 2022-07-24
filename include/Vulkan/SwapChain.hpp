@@ -9,6 +9,8 @@ namespace wfe::editor {
     void CreateSwapChain();
     /// @brief Deletes the Vulkan swap chain. Internal use only.
     void DeleteSwapChain();
+    /// @brief Recreates the Vulkan swap chain, called when the window is resized. Internal use only.
+    void RecreateSwapChain();
 
     /// @brief Returns the framebuffer at the specified index.
     VkFramebuffer GetFrameBuffer(size_t index);
