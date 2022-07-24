@@ -335,7 +335,7 @@ namespace wfe::editor {
         
         // Output the device's name
         vkGetPhysicalDeviceProperties(physicalDevice, &physicalDeviceProperties);
-        console::OutMessageFunction((string)"Found suitable GPU: " + physicalDeviceProperties.deviceName);
+        console::OutMessageFunction((string)"Found suitable GPU: " + physicalDeviceProperties.deviceName + ".");
     }
     static void CreateLogicalDevice() {
         // Set the device queue create info
@@ -821,9 +821,6 @@ namespace wfe::editor {
             EndSingleTimeCommands(commandBuffer);
     }
     VkDeviceSize PadUniformBufferSize(VkDeviceSize originalSize) {
-        if(originalSize < physicalDeviceProperties.limits.nonCoherentAtomSize)
-            return physicalDeviceProperties.limits.nonCoherentAtomSize;
-        else
-            return (originalSize + physicalDeviceProperties.limits.minUniformBufferOffsetAlignment - 1) & ~(physicalDeviceProperties.limits.minUniformBufferOffsetAlignment - 1);
+        return (originalSize + physicalDeviceProperties.limits.nonCoherentAtomSize - 1) & ~(physicalDeviceProperties.limits.nonCoherentAtomSize - 1);
     }
 }

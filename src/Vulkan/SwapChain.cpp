@@ -370,6 +370,7 @@ namespace wfe::editor {
         CreateRenderPass();
         CreateFramebuffers();
         CreateSyncObjects();
+        console::OutMessageFunction("Created swap chain successfully.");
     }
     void DeleteSwapChain() {
         for(size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; ++i)
@@ -395,6 +396,7 @@ namespace wfe::editor {
             vkDestroyImageView(GetDevice(), imageView, GetVulkanAllocator());
         
         vkDestroySwapchainKHR(GetDevice(), swapChain, GetVulkanAllocator());
+        console::OutMessageFunction("Deleted swap chain successfully.");
     }
     void RecreateSwapChain() {
         // Destroy every swap chain related object

@@ -5,6 +5,7 @@
 #include "MainWindow/WindowsMainWindow.hpp"
 #include "Vulkan/Device.hpp"
 #include "Vulkan/SwapChain.hpp"
+#include "Vulkan/ImGuiPipeline.hpp"
 #include "ProjectInfo.hpp"
 #include "imgui.hpp"
 #include "Core.hpp"
@@ -123,6 +124,8 @@ LRESULT CALLBACK WinProc(_In_ HWND hWindow, _In_ UINT msg, _In_ WPARAM wParam, _
         ImGui::GetIO().BackendFlags |= ImGuiBackendFlags_HasSetMousePos;
 
         ImGui::StyleColorsDark();
+
+        wfe::editor::CreateImGuiPipeline();
         
         break;
     case WM_SIZE:
@@ -224,6 +227,8 @@ LRESULT CALLBACK WinProc(_In_ HWND hWindow, _In_ UINT msg, _In_ WPARAM wParam, _
         DestroyWindow(hWnd);
         break;
     case WM_DESTROY:
+        wfe::editor::DeleteImGuiPipeline();
+
         ImGui::DestroyContext();
 
         wfe::editor::DeleteSwapChain();
