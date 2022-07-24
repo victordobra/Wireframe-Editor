@@ -4,6 +4,7 @@
 
 #include "MainWindow/WindowsMainWindow.hpp"
 #include "Vulkan/Device.hpp"
+#include "Vulkan/SwapChain.hpp"
 #include "ProjectInfo.hpp"
 #include "imgui.hpp"
 #include "Core.hpp"
@@ -36,7 +37,7 @@ static void OutputLastWin32Error(const wfe::char_t* output) {
     wfe::console::OutFatalError((wfe::string)output + " Error: " + error, 1);
 }
 
-static void RegisterClass() {
+static void RegisterWindowClass() {
     // Create the class register info
     WNDCLASSEX wcex;
 
@@ -98,15 +99,18 @@ int main(int argc, char** args) {
     hInstance = GetModuleHandle(NULL);
 
     wfe::console::OpenLogFile();
-    RegisterClass();
+    RegisterWindowClass();
     CreateHWnd();
     return RunMessageLoop();
 }
-LRESULT CALLBACK WinProc(_In_ HWND hWnd, _In_ UINT msg, _In_ WPARAM wParam, _In_ LPARAM lParam) {
+LRESULT CALLBACK WinProc(_In_ HWND hWindow, _In_ UINT msg, _In_ WPARAM wParam, _In_ LPARAM lParam) {
     switch(msg) {
     case WM_CREATE:
+        hWnd = hWindow;
+
         // Create all Vulkan objects
         wfe::editor::CreateDevice();
+        wfe::editor::CreateSwapChain();
 
         // Configure ImGui
         IMGUI_CHECKVERSION();
@@ -220,15 +224,17 @@ LRESULT CALLBACK WinProc(_In_ HWND hWnd, _In_ UINT msg, _In_ WPARAM wParam, _In_
     case WM_DESTROY:
         ImGui::DestroyContext();
 
+        wfe::editor::DeleteSwapChain();
         wfe::editor::DeleteDevice();
 
         wfe::console::OutMessageFunction("Deleted Win32 window successfully.");
+        wfe::console::CloseLogFile();
 
         PostQuitMessage(0);
         break;
     }
 
-    return DefWindowProc(hWnd, msg, wParam, lParam);
+    return DefWindowProc(hWindow, msg, wParam, lParam);
 }
 
 // External functions

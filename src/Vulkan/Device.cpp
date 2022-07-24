@@ -313,7 +313,7 @@ namespace wfe::editor {
         auto result = vkCreateWin32SurfaceKHR(instance, &createInfo, allocator, &surface);
         if(result != VK_SUCCESS)
             console::OutFatalError((string)"Failed to create surface! Error code: " + VkResultToString(result), 1);
-        console::OutMessageFunction("Create Vulkan window surface successfully.");
+        console::OutMessageFunction("Created Vulkan window surface successfully.");
 #endif
     }
     static void PickPhysicalDevice() {
@@ -487,6 +487,9 @@ namespace wfe::editor {
         console::OutMessageFunction("Deleted Vulkan instance successfully.");
     }
 
+    const VkAllocationCallbacks* GetVulkanAllocator() {
+        return allocator;
+    }
     VkInstance GetVulkanInstance() {
         return instance;
     }

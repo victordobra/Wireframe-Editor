@@ -28,6 +28,8 @@ namespace wfe::editor {
     /// @brief Deletes the Vulkan device. Internal use only
     void DeleteDevice();
 
+    /// @brief Returns the Vulkan allocator.
+    const VkAllocationCallbacks* GetVulkanAllocator();
     /// @brief Returns the Vulkan instance.
     VkInstance GetVulkanInstance();
     /// @brief Returns the Vulkan physical device.
@@ -73,6 +75,6 @@ namespace wfe::editor {
     void CopyImageToBuffer(VkImage image, VkBuffer buffer, uint32_t width, uint32_t height, uint32_t layerCount, VkCommandBuffer commandBuffer = nullptr);
     /// @brief Transitions the image's layout.
     void TransitionImageLayout(VkImage image, VkImageLayout srcLayout, VkImageLayout dstLayout, VkFormat format, VkCommandBuffer commandBuffer = nullptr);
-    /// @brief Pads the uniform buffer size to the nonCoherentAtomSize of the Vulkan physical device.
+    /// @brief Pads the given uniform buffer size.
     VkDeviceSize PadUniformBufferSize(VkDeviceSize originalSize);
 }
