@@ -81,8 +81,7 @@ static void CreateHWnd() {
     
     // Show and update the window
     ShowWindow(hWnd, SW_SHOWNORMAL);
-    if(!UpdateWindow(hWnd))
-        OutputLastWin32Error("Failed to update window!");
+    UpdateWindow(hWnd);
     
 }
 static wfe::int32_t RunMessageLoop() {
@@ -109,10 +108,6 @@ LRESULT CALLBACK WinProc(_In_ HWND hWindow, _In_ UINT msg, _In_ WPARAM wParam, _
     case WM_CREATE:
         hWnd = hWindow;
 
-        // Create all Vulkan objects
-        wfe::editor::CreateDevice();
-        wfe::editor::CreateSwapChain();
-
         // Configure ImGui
         IMGUI_CHECKVERSION();
         ImGui::CreateContext();
@@ -124,6 +119,10 @@ LRESULT CALLBACK WinProc(_In_ HWND hWindow, _In_ UINT msg, _In_ WPARAM wParam, _
         ImGui::GetIO().BackendFlags |= ImGuiBackendFlags_HasSetMousePos;
 
         ImGui::StyleColorsDark();
+
+        // Create all Vulkan objects
+        wfe::editor::CreateDevice();
+        wfe::editor::CreateSwapChain();
 
         wfe::editor::CreateImGuiPipeline();
         
@@ -222,7 +221,12 @@ LRESULT CALLBACK WinProc(_In_ HWND hWindow, _In_ UINT msg, _In_ WPARAM wParam, _
     }
         return 1;
     case WM_PAINT:
-        break;
+        ImGui::NewFrame();
+        ImGui::ShowDemoWindow();
+        ImGui::Render();
+
+        wfe::editor::DrawImGui();
+        return 0;
     case WM_CLOSE:
         DestroyWindow(hWnd);
         break;

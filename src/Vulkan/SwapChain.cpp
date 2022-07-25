@@ -360,6 +360,9 @@ namespace wfe::editor {
             if(result != VK_SUCCESS)
                 console::OutFatalError((string)"Failed to create in flight fence! Error code: " + VkResultToString(result), 1);
         }
+
+        for(auto& imageInFlight : imagesInFlight)
+            imageInFlight = VK_NULL_HANDLE;
     }
 
     // External functions
@@ -462,6 +465,7 @@ namespace wfe::editor {
     }
 
     VkResult AcquireNextImage(uint32_t* imageIndex) {
+        // Wait for the current in flight fence
         auto result = vkWaitForFences(GetDevice(), 1, inFlightFences + currentFrame, VK_TRUE, UINT64_MAX);
         if(result != VK_SUCCESS)
             console::OutFatalError((string)"Failed to wait for fences! Error code: " + VkResultToString(result), 1);
@@ -509,7 +513,7 @@ namespace wfe::editor {
         presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
         presentInfo.pNext = nullptr;
         presentInfo.waitSemaphoreCount = 1;
-        presentInfo.pWaitSemaphores = imageAvailableSemaphores + currentFrame;
+        presentInfo.pWaitSemaphores = renderFinishedSemaphores + currentFrame;
         presentInfo.swapchainCount = 1;
         presentInfo.pSwapchains = &swapChain;
         presentInfo.pImageIndices = imageIndex;
@@ -519,8 +523,7 @@ namespace wfe::editor {
         result = vkQueuePresentKHR(GetPresentQueue(), &presentInfo);
 
         // Increment the frame counter
-        currentFrame += 1;
-        if(currentFrame == MAX_FRAMES_IN_FLIGHT)
+        if(++currentFrame == MAX_FRAMES_IN_FLIGHT)
             currentFrame = 0;
 
         return result;

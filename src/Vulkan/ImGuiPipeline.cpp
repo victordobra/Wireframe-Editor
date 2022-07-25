@@ -622,7 +622,186 @@ namespace wfe::editor {
         console::OutMessageFunction("Deleted ImGui graphics pipeline successfully.");
     }
     void DrawImGui() {
+        // Acquire the next swap chain image
+        uint32_t imageIndex;
+        auto result = AcquireNextImage(&imageIndex);
+        if(result == VK_ERROR_OUT_OF_DATE_KHR)
+            return;
+        if(result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR)
+            console::OutFatalError((string)"Failed to acquire next swap chain image! Error code: " + VkResultToString(result), 1);
 
+        // Get the ImGui draw data
+        ImDrawData* drawData = ImGui::GetDrawData();
+
+        VkBuffer vertexBuffer, indexBuffer;
+        VkDeviceMemory vertexBufferMemory, indexBufferMemory;
+
+        if(drawData->TotalVtxCount) {
+            // Create the vertex and index buffers
+            VkDeviceSize vertexBufferSize = drawData->TotalVtxCount * sizeof(ImDrawVert);
+            VkDeviceSize indexBufferSize = drawData->TotalIdxCount * sizeof(ImDrawIdx);
+
+            CreateBuffer(vertexBufferSize, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT, vertexBuffer, vertexBufferMemory);
+            CreateBuffer(indexBufferSize, VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT, indexBuffer, indexBufferMemory);
+
+            // Write to the vertex and index buffers
+            ImDrawVert *dstVert;
+            ImDrawIdx *dstInd;
+
+            vkMapMemory(GetDevice(), vertexBufferMemory, 0, vertexBufferSize, 0, (void**)&dstVert);
+            vkMapMemory(GetDevice(), indexBufferMemory, 0, indexBufferSize, 0, (void**)&dstInd);
+
+            for(size_t i = 0; i < drawData->CmdListsCount; ++i) {
+                memcpy(dstVert, drawData->CmdLists[i]->VtxBuffer.Data, drawData->CmdLists[i]->VtxBuffer.Size * sizeof(ImDrawVert));
+                memcpy(dstInd, drawData->CmdLists[i]->IdxBuffer.Data, drawData->CmdLists[i]->IdxBuffer.Size * sizeof(ImDrawIdx));
+
+                dstVert += drawData->CmdLists[i]->VtxBuffer.Size;
+                dstInd += drawData->CmdLists[i]->IdxBuffer.Size;
+            }
+
+            // Flush the changes and unmap the buffers
+            VkMappedMemoryRange ranges[2];
+
+            ranges[0].sType = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
+            ranges[0].pNext = nullptr;
+            ranges[0].memory = vertexBufferMemory;
+            ranges[0].offset = 0;
+            ranges[0].size = vertexBufferSize;
+
+            ranges[1].sType = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
+            ranges[1].pNext = nullptr;
+            ranges[1].memory = indexBufferMemory;
+            ranges[1].offset = 0;
+            ranges[1].size = indexBufferSize;
+
+            vkFlushMappedMemoryRanges(GetDevice(), 2, ranges);
+
+            vkUnmapMemory(GetDevice(), vertexBufferMemory);
+            vkUnmapMemory(GetDevice(), indexBufferMemory);
+        }
+
+        VkCommandBuffer commandBuffer;
+
+        // Allocate the command buffers
+        VkCommandBufferAllocateInfo allocInfo;
+
+        allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+        allocInfo.pNext = nullptr;
+        allocInfo.commandPool = GetCommandPool();
+        allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+        allocInfo.commandBufferCount = 1;
+
+        result = vkAllocateCommandBuffers(GetDevice(), &allocInfo, &commandBuffer);
+        if(result != VK_SUCCESS)
+            console::OutFatalError((string)"Failed to allocate command buffers! Error code: " + VkResultToString(result), 1);
+        
+        // Begin recording the command buffer
+        VkCommandBufferBeginInfo beginInfo;
+
+        beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+        beginInfo.pNext = nullptr;
+        beginInfo.flags = 0;
+        beginInfo.pInheritanceInfo = nullptr;
+
+        result = vkBeginCommandBuffer(commandBuffer, &beginInfo);
+        if(result != VK_SUCCESS)
+            console::OutFatalError((string)"Failed to begin recording command buffer! Error code: " + VkResultToString(result), 1);
+
+        // Set the clear values
+        VkClearValue clearValues[2];
+        clearValues[0] = { 0.f, 0.f, 0.f, 1.f };
+        clearValues[1] = { 1.f, 0 };
+
+        // Begin the render pass
+        VkRenderPassBeginInfo renderPassInfo;
+
+        renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+        renderPassInfo.pNext = nullptr;
+        renderPassInfo.renderPass = GetRenderPass();
+        renderPassInfo.framebuffer = GetFrameBuffer(imageIndex);
+        renderPassInfo.renderArea = { { 0, 0 }, GetSwapChainExtent() };
+        renderPassInfo.clearValueCount = 2;
+        renderPassInfo.pClearValues = clearValues;
+
+        vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+
+        // Create the viewport
+        VkViewport viewport = { 0.f, 0.f, (float32_t)GetSwapChainWidth(), (float32_t)GetSwapChainHeight(), 0.f, 1.f };
+        
+        // Set the push constants
+        PushConstants pushConstants;
+        pushConstants.scale[0] = 2.f / GetSwapChainWidth();
+        pushConstants.scale[1] = 2.f / GetSwapChainHeight();
+
+        vkCmdPushConstants(commandBuffer, layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(PushConstants), &pushConstants);
+
+        // Bind the font descriptor set
+        vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, layout, 0, 1, fontDescriptorSets + GetCurrentFrame(), 0, nullptr);
+
+        VkDeviceSize vertOffset = 0, indOffset = 0;
+        for(size_t i = 0; i < drawData->CmdListsCount; ++i) {
+            ImDrawList* cmdList = drawData->CmdLists[i];
+            for(size_t j = 0; j < cmdList->CmdBuffer.Size; ++j) {
+                ImDrawCmd* drawCmd = &cmdList->CmdBuffer[j];
+                
+                if(drawCmd->UserCallback) {
+                    // Run the specified user callback
+                    if(drawCmd->UserCallback != ImDrawCallback_ResetRenderState)
+                        drawCmd->UserCallback(cmdList, drawCmd);
+                } else {
+                    // Bind the pipeline
+                    vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
+
+                    // Set the viewport
+                    vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
+
+                    // Set the scissor
+                    VkRect2D scissor = { { (int32_t)drawCmd->ClipRect.x, (int32_t)drawCmd->ClipRect.y }, { (uint32_t)drawCmd->ClipRect.z - (uint32_t)drawCmd->ClipRect.x, (uint32_t)drawCmd->ClipRect.w - (uint32_t)drawCmd->ClipRect.y } };
+                    vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
+
+                    // Push constants
+                    vkCmdPushConstants(commandBuffer, layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(PushConstants), &pushConstants);
+
+                    // Bind the font descriptor set
+                    vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, layout, 0, 1, fontDescriptorSets + GetCurrentFrame(), 0, nullptr);
+
+                    // Bind the vertex and index buffers
+                    VkDeviceSize offset = 0;
+                    vkCmdBindVertexBuffers(commandBuffer, 0, 1, &vertexBuffer, &offset);
+                    vkCmdBindIndexBuffer(commandBuffer, indexBuffer, offset, VK_INDEX_TYPE_UINT16);
+
+                    // Draw the UI elements
+                    vkCmdDrawIndexed(commandBuffer, drawCmd->ElemCount, 1, drawCmd->IdxOffset + indOffset, drawCmd->VtxOffset + vertOffset, 0);
+                }
+            }
+
+            vertOffset += cmdList->VtxBuffer.Size;
+            indOffset += cmdList->IdxBuffer.Size;
+        }
+
+        // End the render pass
+        vkCmdEndRenderPass(commandBuffer);
+
+        // End recording the command buffer
+        result = vkEndCommandBuffer(commandBuffer);
+        if(result != VK_SUCCESS)
+            console::OutFatalError((string)"Failed to end recording command buffer! Error code: " + VkResultToString(result), 1);
+        
+        // Submit the command buffer
+        result = SubmitCommandBuffers(&commandBuffer, &imageIndex);
+        if(result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR && result != VK_ERROR_OUT_OF_DATE_KHR)
+            console::OutFatalError((string)"Failed to submit command buffer! Error code: " + VkResultToString(result), 1);
+        
+        vkDeviceWaitIdle(GetDevice());
+        vkFreeCommandBuffers(GetDevice(), GetCommandPool(), 1, &commandBuffer);
+
+        if(drawData->TotalVtxCount) {
+            // Destroy the vertex and index buffers
+            vkDestroyBuffer(GetDevice(), vertexBuffer, GetVulkanAllocator());
+            vkDestroyBuffer(GetDevice(), indexBuffer, GetVulkanAllocator());
+            vkFreeMemory(GetDevice(), vertexBufferMemory, GetVulkanAllocator());
+            vkFreeMemory(GetDevice(), indexBufferMemory, GetVulkanAllocator());
+        }
     }
 
     VkPipeline GetImGuiPipeline() {
