@@ -117,8 +117,8 @@ namespace wfe::editor {
     VkPipeline pipeline;
     VkPipelineLayout layout;
     VkShaderModule vertShaderModule, fragShaderModule;
-
     VkSampler sampler;
+    VkCommandBuffer commandBuffer;
 
     VkDescriptorPool descriptorPool;
     VkDescriptorSetLayout fontDescriptorSetLayout;
@@ -680,8 +680,6 @@ namespace wfe::editor {
             vkUnmapMemory(GetDevice(), indexBufferMemory);
         }
 
-        VkCommandBuffer commandBuffer;
-
         // Allocate the command buffers
         VkCommandBufferAllocateInfo allocInfo;
 
@@ -809,5 +807,8 @@ namespace wfe::editor {
     }
     VkPipelineLayout GetImGuiPipelineLayout() {
         return layout;
+    }
+    VkCommandBuffer GetImGuiCommandBuffer() {
+        return commandBuffer;
     }
 }

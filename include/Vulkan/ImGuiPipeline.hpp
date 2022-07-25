@@ -14,4 +14,6 @@ namespace wfe::editor {
     VkPipeline GetImGuiPipeline();
     /// @brief Returns the ImGui pipeline layout.
     VkPipelineLayout GetImGuiPipelineLayout();
+    /// @brief Returns the ImGui command buffer.
+    VkCommandBuffer GetImGuiCommandBuffer();
 }
