@@ -6,6 +6,7 @@
 #include "Vulkan/Device.hpp"
 #include "Vulkan/SwapChain.hpp"
 #include "Vulkan/ImGuiPipeline.hpp"
+#include "Base/Window.hpp"
 #include "ProjectInfo.hpp"
 #include "imgui.hpp"
 #include "Core.hpp"
@@ -118,6 +119,9 @@ LRESULT CALLBACK WinProc(_In_ HWND hWindow, _In_ UINT msg, _In_ WPARAM wParam, _
         ImGui::GetIO().BackendFlags |= ImGuiBackendFlags_HasMouseCursors;
         ImGui::GetIO().BackendFlags |= ImGuiBackendFlags_HasSetMousePos;
 
+        ImGui::GetIO().LogFilename = "imgui-log.txt";
+        ImGui::GetIO().IniFilename = nullptr;
+
         ImGui::StyleColorsDark();
 
         // Create all Vulkan objects
@@ -221,10 +225,7 @@ LRESULT CALLBACK WinProc(_In_ HWND hWindow, _In_ UINT msg, _In_ WPARAM wParam, _
     }
         return 1;
     case WM_PAINT:
-        ImGui::NewFrame();
-        ImGui::ShowDemoWindow();
-        ImGui::Render();
-
+        wfe::editor::Window::RenderWindows();
         wfe::editor::DrawImGui();
         return 0;
     case WM_CLOSE:
