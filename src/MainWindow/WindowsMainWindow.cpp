@@ -7,6 +7,7 @@
 #include "Vulkan/SwapChain.hpp"
 #include "Vulkan/ImGuiPipeline.hpp"
 #include "Base/Window.hpp"
+#include "Examples/ExampleDemoWindow.hpp"
 #include "ProjectInfo.hpp"
 #include "imgui.hpp"
 #include "Core.hpp"
@@ -127,8 +128,9 @@ LRESULT CALLBACK WinProc(_In_ HWND hWindow, _In_ UINT msg, _In_ WPARAM wParam, _
         // Create all Vulkan objects
         wfe::editor::CreateDevice();
         wfe::editor::CreateSwapChain();
-
         wfe::editor::CreateImGuiPipeline();
+
+        new wfe::editor::ExampleDemoWindow();
         
         break;
     case WM_SIZE:
