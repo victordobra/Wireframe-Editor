@@ -32,6 +32,12 @@ ImGuiKey Win32KeyToImGuiKey(wfe::int32_t key) {
         return ImGuiKey_Enter;
     case VK_ESCAPE: 
         return ImGuiKey_Escape;
+    case VK_SHIFT:
+        return ImGuiKey_ModShift;
+    case VK_CONTROL:
+        return ImGuiKey_ModCtrl;
+    case VK_MENU:
+        return ImGuiKey_ModAlt;
     case VK_OEM_7: 
         return ImGuiKey_Apostrophe;
     case VK_OEM_COMMA: 

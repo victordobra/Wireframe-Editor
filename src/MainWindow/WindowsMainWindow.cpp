@@ -219,6 +219,36 @@ LRESULT CALLBACK WinProc(_In_ HWND hWindow, _In_ UINT msg, _In_ WPARAM wParam, _
             ImGui::GetIO().AddKeyEvent(key, true);
             ImGui::GetIO().SetKeyEventNativeData(key, wParam, scancode);
         }
+
+        // Process exceptions for shift, control and alt
+        if(wParam == VK_SHIFT) {
+            if(GetAsyncKeyState(VK_LSHIFT) >> 15) {
+                ImGui::GetIO().AddKeyEvent(ImGuiKey_LeftShift, true);
+                ImGui::GetIO().SetKeyEventNativeData(ImGuiKey_LeftShift, VK_LSHIFT, scancode);
+            }
+            if(GetAsyncKeyState(VK_RSHIFT) >> 15) {
+                ImGui::GetIO().AddKeyEvent(ImGuiKey_RightShift, true);
+                ImGui::GetIO().SetKeyEventNativeData(ImGuiKey_RightShift, VK_RSHIFT, scancode);
+            }
+        } else if(wParam == VK_CONTROL) {
+            if(GetAsyncKeyState(VK_LCONTROL) >> 15) {
+                ImGui::GetIO().AddKeyEvent(ImGuiKey_LeftCtrl, true);
+                ImGui::GetIO().SetKeyEventNativeData(ImGuiKey_LeftCtrl, VK_LCONTROL, scancode);
+            }
+            if(GetAsyncKeyState(VK_RCONTROL) >> 15) {
+                ImGui::GetIO().AddKeyEvent(ImGuiKey_RightCtrl, true);
+                ImGui::GetIO().SetKeyEventNativeData(ImGuiKey_RightCtrl, VK_RCONTROL, scancode);
+            }
+        } else if(wParam == VK_MENU) {
+            if(GetAsyncKeyState(VK_LMENU) >> 15) {
+                ImGui::GetIO().AddKeyEvent(ImGuiKey_LeftSuper, true);
+                ImGui::GetIO().SetKeyEventNativeData(ImGuiKey_LeftSuper, VK_LMENU, scancode);
+            }
+            if(GetAsyncKeyState(VK_RMENU) >> 15) {
+                ImGui::GetIO().AddKeyEvent(ImGuiKey_RightSuper, true);
+                ImGui::GetIO().SetKeyEventNativeData(ImGuiKey_RightSuper, VK_RMENU, scancode);
+            }
+        }
     }
         break;
     case WM_KEYUP:
@@ -230,6 +260,36 @@ LRESULT CALLBACK WinProc(_In_ HWND hWindow, _In_ UINT msg, _In_ WPARAM wParam, _
         if(key != ImGuiKey_None) {
             ImGui::GetIO().AddKeyEvent(key, false);
             ImGui::GetIO().SetKeyEventNativeData(key, wParam, scancode);
+        }
+
+        // Process exceptions for shift, control and alt
+        if(wParam == VK_SHIFT) {
+            if(!(GetAsyncKeyState(VK_LSHIFT) >> 15)) {
+                ImGui::GetIO().AddKeyEvent(ImGuiKey_LeftShift, false);
+                ImGui::GetIO().SetKeyEventNativeData(ImGuiKey_LeftShift, VK_LSHIFT, scancode);
+            }
+            if(!(GetAsyncKeyState(VK_RSHIFT) >> 15)) {
+                ImGui::GetIO().AddKeyEvent(ImGuiKey_RightShift, false);
+                ImGui::GetIO().SetKeyEventNativeData(ImGuiKey_RightShift, VK_RSHIFT, scancode);
+            }
+        } else if(wParam == VK_CONTROL) {
+            if(!(GetAsyncKeyState(VK_LCONTROL) >> 15)) {
+                ImGui::GetIO().AddKeyEvent(ImGuiKey_LeftCtrl, false);
+                ImGui::GetIO().SetKeyEventNativeData(ImGuiKey_LeftCtrl, VK_LCONTROL, scancode);
+            }
+            if(!(GetAsyncKeyState(VK_RCONTROL) >> 15)) {
+                ImGui::GetIO().AddKeyEvent(ImGuiKey_RightCtrl, false);
+                ImGui::GetIO().SetKeyEventNativeData(ImGuiKey_RightCtrl, VK_RCONTROL, scancode);
+            }
+        } else if(wParam == VK_MENU) {
+            if(!(GetAsyncKeyState(VK_LMENU) >> 15)) {
+                ImGui::GetIO().AddKeyEvent(ImGuiKey_LeftSuper, false);
+                ImGui::GetIO().SetKeyEventNativeData(ImGuiKey_LeftSuper, VK_LMENU, scancode);
+            }
+            if(!(GetAsyncKeyState(VK_RMENU) >> 15)) {
+                ImGui::GetIO().AddKeyEvent(ImGuiKey_RightSuper, false);
+                ImGui::GetIO().SetKeyEventNativeData(ImGuiKey_RightSuper, VK_RMENU, scancode);
+            }
         }
     }
         break;
