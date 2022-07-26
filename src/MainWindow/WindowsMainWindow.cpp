@@ -7,7 +7,6 @@
 #include "Vulkan/SwapChain.hpp"
 #include "Vulkan/ImGuiPipeline.hpp"
 #include "Base/Window.hpp"
-#include "Examples/ExampleDemoWindow.hpp"
 #include "ProjectInfo.hpp"
 #include "imgui.hpp"
 #include "Core.hpp"
@@ -40,6 +39,45 @@ static void OutputLastWin32Error(const wfe::char_t* output) {
     wfe::console::OutFatalError((wfe::string)output + " Error: " + error, 1);
 }
 
+// Internal functions
+static const wfe::char_t* GetClipboardText(void* userData) {
+    // Open the clipboard
+    OpenClipboard(NULL);
+
+    // Get the clipboard data
+    HANDLE data = GetClipboardData(CF_TEXT);
+
+    // Copy the data to a buffer
+    wfe::char_t* dataPtr = (wfe::char_t*)GlobalLock(data);
+    wfe::size_t size = strlen(dataPtr) + 1;
+
+    wfe::char_t* buffer = new wfe::char_t[size];
+    memcpy(buffer, dataPtr, size);
+
+    // Close the clipboard
+    GlobalUnlock(data);
+    CloseClipboard();
+
+    return buffer;
+}
+static void SetClipboardText(void* userData, const wfe::char_t* text) {
+    // Open the clipboard
+    OpenClipboard(NULL);
+
+    // Copy the text to a buffer
+    wfe::size_t size = strlen(text) + 1;
+    HGLOBAL data = GlobalAlloc(GMEM_MOVEABLE, size);
+
+    memcpy(GlobalLock(data), text, size);
+    GlobalUnlock(data);
+
+    // Set the clipboard text
+    SetClipboardData(CF_TEXT, data);
+
+    // Close the clipboard
+    CloseClipboard();
+}
+
 static void RegisterWindowClass() {
     // Create the class register info
     WNDCLASSEX wcex;
@@ -59,7 +97,7 @@ static void RegisterWindowClass() {
 
     // Try to register the class
     if(!RegisterClassEx(&wcex))
-        OutputLastWin32Error("Failed to register class!");
+        OutputLastWin32Error("Failed to register Win32 class!");
     wfe::console::OutMessageFunction("Registered Win32 class successfully.");
 }
 static void CreateHWnd() {
@@ -78,7 +116,7 @@ static void CreateHWnd() {
 
     // Throw an error if the window wasn't created properly
     if(!hWnd)
-        OutputLastWin32Error("Failed to create window!");
+        OutputLastWin32Error("Failed to create Win32 window!");
     wfe::console::OutMessageFunction("Created Win32 window successfully.");
     
     // Show and update the window
@@ -122,6 +160,9 @@ LRESULT CALLBACK WinProc(_In_ HWND hWindow, _In_ UINT msg, _In_ WPARAM wParam, _
 
         ImGui::GetIO().LogFilename = "imgui-log.txt";
         ImGui::GetIO().IniFilename = nullptr;
+        
+        ImGui::GetIO().GetClipboardTextFn = GetClipboardText;
+        ImGui::GetIO().SetClipboardTextFn = SetClipboardText;
 
         ImGui::StyleColorsDark();
 
@@ -129,8 +170,6 @@ LRESULT CALLBACK WinProc(_In_ HWND hWindow, _In_ UINT msg, _In_ WPARAM wParam, _
         wfe::editor::CreateDevice();
         wfe::editor::CreateSwapChain();
         wfe::editor::CreateImGuiPipeline();
-
-        new wfe::editor::ExampleDemoWindow();
         
         break;
     case WM_SIZE:
@@ -227,7 +266,7 @@ LRESULT CALLBACK WinProc(_In_ HWND hWindow, _In_ UINT msg, _In_ WPARAM wParam, _
     }
         return 1;
     case WM_PAINT:
-        wfe::editor::Window::RenderWindows();
+        wfe::editor::RenderWindows();
         wfe::editor::DrawImGui();
         return 0;
     case WM_CLOSE:
