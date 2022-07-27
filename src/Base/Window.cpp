@@ -25,6 +25,40 @@ namespace wfe::editor {
         ImGuiID dockSpaceID = ImGui::GetID("DockSpace");
         ImGui::DockSpace(dockSpaceID, ImVec2(0.f, 0.f), ImGuiDockNodeFlags_None);
 
+        // Start the menu bar
+        if(ImGui::BeginMenuBar()) {
+            // Display basic file settings
+            if(ImGui::BeginMenu("File")) {
+                if(ImGui::MenuItem("New project", "Ctrl+N")) {
+                    // TODO: Creating a new project
+                    console::OutMessageFunction("New project");
+                }
+                if(ImGui::MenuItem("Open project", "Ctrl+O")) {
+                    // TODO: Opening a project
+                    console::OutMessageFunction("Loaded project");
+                }
+                if(ImGui::MenuItem("Save", "Ctrl+S")) {
+                    // TODO: Saving callback
+                    console::OutMessageFunction("Saved project");
+                }
+                if(ImGui::MenuItem("Exit", nullptr)) {
+                    // Exit the program
+                    exit(0);
+                }
+                
+                ImGui::EndMenu();
+            }
+            // Display every window type
+            if(ImGui::BeginMenu("Windows")) {
+                for(auto& windowType : WindowType::windowTypes) {
+                    ImGui::MenuItem(windowType.val2.name.c_str(), nullptr, &windowType.val2.open);
+                }
+                ImGui::EndMenu();
+            }
+
+            ImGui::EndMenuBar();
+        }
+
         // Render every window
         for(auto& windowType : WindowType::windowTypes)
             if(windowType.val2.open)
