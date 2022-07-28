@@ -56,7 +56,7 @@ namespace { \
     EditorWindowInit initWindow; \
 }
 // Macro for setting the load callback
-#define WFE_SET_LOAD_CALLBACK(callback) \
+#define WFE_EDITOR_SET_LOAD_CALLBACK(callback) \
 namespace { \
     /* Struct for setting the load callback */ \
     struct LoadCallbackSetter { \
@@ -67,7 +67,7 @@ namespace { \
     LoadCallbackSetter loadCallbackSetter; \
 }
 // Macro for setting the save callback
-#define WFE_SET_SAVE_CALLBACK(callback) \
+#define WFE_EDITOR_SET_SAVE_CALLBACK(callback) \
 namespace { \
     /* Struct for setting the save callback */ \
     struct SaveCallbackSetter { \
