@@ -22,7 +22,7 @@
 
 // Variables
 wfe::string className = "Application";
-wfe::string appName = PROJECT_NAME;
+wfe::string appName;
 
 wfe::size_t windowWidth, windowHeight;
 
@@ -101,6 +101,9 @@ static void RegisterWindowClass() {
     wfe::console::OutMessageFunction("Registered Win32 class successfully.");
 }
 static void CreateHWnd() {
+    wfe::editor::LoadWorkspace();
+    appName = wfe::editor::GetWorkspaceDir() + " - Wireframe Engine";
+
     // Create the window
     hWnd = CreateWindow(
         className.c_str(),
@@ -356,6 +359,14 @@ wfe::size_t wfe::editor::GetMainWindowWidth() {
 }
 wfe::size_t wfe::editor::GetMainWindowHeight() {
     return windowHeight;
+}
+
+wfe::string wfe::editor::GetMainWindowName() {
+    return appName;
+}
+void wfe::editor::SetMainWindowName(const wfe::string& newName) {
+    appName = newName;
+    SetWindowText(hWnd, appName.c_str());
 }
 
 HWND wfe::editor::GetWindowHandle() {

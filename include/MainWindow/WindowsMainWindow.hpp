@@ -11,6 +11,9 @@ namespace wfe::editor {
     size_t GetMainWindowWidth();
     size_t GetMainWindowHeight();
 
+    string GetMainWindowName();
+    void SetMainWindowName(const string& newName);
+
     HWND GetWindowHandle();
     HINSTANCE GetWindowsInstance();
 }
