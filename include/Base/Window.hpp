@@ -47,7 +47,7 @@ namespace { \
  \
             windowType.name = winName; \
             windowType.render = winRender; \
-            windowType.open = true; \
+            windowType.open = false; \
  \
             wfe::editor::WindowType::windowTypes.insert({ windowType.name, windowType }); \
         } \
