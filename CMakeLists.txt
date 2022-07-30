@@ -51,29 +51,5 @@ message(STATUS "Link libraries added.")
 target_precompile_headers(${PROJECT_NAME} PUBLIC ${PROJECT_SOURCE_DIR}/include/WireframeEngineEditor.hpp)
 message(STATUS "Precompiled header added.")
 
-# Find all shaders in the project
-file(GLOB_RECURSE GLSL_SOURCE_FILES "${PROJECT_SOURCE_DIR}/src/Shaders/*.frag" "${PROJECT_SOURCE_DIR}/src/Shaders/*.vert")
-set(GLSL_VALIDATOR ${PROJECT_SOURCE_DIR}/external/Vulkan/glsl/glslc.exe)
-list(LENGTH GLSL_SOURCE_FILES GLSL_COUNT)
-
-if(GLSL_COUNT EQUAL 0)
-    message(STATUS "No shaders found.")
-elseif(GLSL_COUNT EQUAL 1)
-    message(STATUS "1 shader found.")
-else()
-    message(STATUS "${GLSL_COUNT} shaders found.")
-endif()
-
-# Compile shaders
-foreach(GLSL ${GLSL_SOURCE_FILES})
-    get_filename_component(GLSL_NAME ${GLSL} NAME)
-    set(SPIRV "${PROJECT_SOURCE_DIR}/build/shaders/${GLSL_NAME}.spv")
-    add_custom_command(OUTPUT ${SPIRV} COMMAND ${GLSL_VALIDATOR} ${GLSL} -o ${SPIRV} DEPENDS ${GLSL})
-    list(APPEND SPIRV_BINARY_FILES ${SPIRV})
-endforeach(GLSL)
-
-add_custom_target(SHADERS ALL DEPENDS ${SPIRV_BINARY_FILES})
-message(STATUS "Shader compile step added successfully.")
-
 set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})
 include(CPack)
