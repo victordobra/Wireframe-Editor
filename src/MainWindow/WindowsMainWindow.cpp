@@ -127,7 +127,23 @@ static void CreateHWnd() {
     UpdateWindow(hWnd);
     
 }
-static wfe::int32_t RunMessageLoop() {
+
+// Windows functions
+int main(int argc, char** args) {
+    hInstance = GetModuleHandle(NULL);
+
+    for(int32_t i = 0; i < argc; ++i) {
+        if(!strcmp(args[i], "--vkdebug"))
+            wfe::editor::EnableValidationLayers();
+        else if(!strcmp(args[i], "--novkdebug"))
+            wfe::editor::DisableValidationLayers();
+    }
+
+    wfe::console::OpenLogFile();
+    
+    RegisterWindowClass();
+    CreateHWnd();
+
     MSG msg;
     while(GetMessage(&msg, NULL, 0, 0)) {
         TranslateMessage(&msg);
@@ -135,16 +151,6 @@ static wfe::int32_t RunMessageLoop() {
     }
 
     return (wfe::int32_t)msg.wParam;
-}
-
-// Windows functions
-int main(int argc, char** args) {
-    hInstance = GetModuleHandle(NULL);
-
-    wfe::console::OpenLogFile();
-    RegisterWindowClass();
-    CreateHWnd();
-    return RunMessageLoop();
 }
 LRESULT CALLBACK WinProc(_In_ HWND hWindow, _In_ UINT msg, _In_ WPARAM wParam, _In_ LPARAM lParam) {
     switch(msg) {
@@ -156,6 +162,7 @@ LRESULT CALLBACK WinProc(_In_ HWND hWindow, _In_ UINT msg, _In_ WPARAM wParam, _
         ImGui::CreateContext();
 
         ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+        ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
 
         ImGui::GetIO().BackendPlatformName = "WFE-Win32-Backend";
         ImGui::GetIO().BackendFlags |= ImGuiBackendFlags_HasMouseCursors;

@@ -17,12 +17,6 @@ namespace wfe::editor {
         vector<VkPresentModeKHR> presentModes;
     };
 
-#ifdef NDEBUG
-    const bool8_t enableValidationLayers = false;
-#else
-    const bool8_t enableValidationLayers = true;
-#endif
-
     /// @brief Creates the Vulkan device. Internal use only
     void CreateDevice();
     /// @brief Deletes the Vulkan device. Internal use only
@@ -45,7 +39,15 @@ namespace wfe::editor {
     /// @brief Returns the Vulkan present queue.
     VkQueue GetPresentQueue();
     /// @brief Returns the properties of the Vulkan physical device.
-    const VkPhysicalDeviceProperties& GetDeviceProperties();
+    const VkPhysicalDeviceProperties& GetPhysicalDeviceProperties();
+    /// @brief Returns the features of the VUlkan physical device.
+    const VkPhysicalDeviceFeatures& GetPhysicalDeviceFeatures();
+    /// @brief Returns true if validation layers are enabled, otherwise false.
+    bool8_t AreValidationLayersEnabled();
+    /// @brief Enables validation layers. Internal use only.
+    void EnableValidationLayers();
+    /// @brief Disables validation layers. Internal use only.
+    void DisableValidationLayers();
 
     /// @brief Returns details about swap chain support.
     SwapChainSupportDetails GetSwapChainSupport();
