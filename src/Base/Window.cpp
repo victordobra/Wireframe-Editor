@@ -17,12 +17,8 @@ namespace wfe::editor {
 
         if(input) {
             while(!input.IsAtTheEnd()) {
-                string line = "";
-
+                string line;
                 input.ReadLine(line, line.max_size());
-                // TODO: Remove workaround with the new core
-                if(line[line.length() - 1] == '\n')
-                    line.erase(line.length() - 1);
                 if(line.length())
                     recentDirs.push_back(line);
             }

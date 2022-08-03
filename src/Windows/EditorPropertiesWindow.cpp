@@ -68,8 +68,9 @@ namespace wfe::editor {
                 ImGui::PopItemWidth();
                 ImGui::EndListBox();
             }
+            
             // Add button to add templates
-            if(ImGui::Button("+##templateAddButton", ImVec2(ImGui::GetWindowWidth() - 17.5f, 0.f))) {
+            if(ImGui::Button("+##templateAddButton", ImVec2(-200.f, 0.f))) {
                 templatePaths.push_back("");
             }
 
@@ -77,6 +78,43 @@ namespace wfe::editor {
             ImGui::End();
         }
     }
+
+    
+    void LoadEditorProperties() {
+        FileInput input{ "editor.properties" };
+
+        if(!input)
+            return;
+
+        // Input the default template and project paths
+        input.ReadLine(defaultTemplatePath, defaultTemplatePath.max_size());
+        input.ReadLine(defaultProjectPath, defaultProjectPath.max_size());
+
+        // Input every template path
+        while(!input.IsAtTheEnd()) {
+            string line;
+            input.ReadLine(line, line.max_size());
+            if(line.length())
+                templatePaths.push_back(line);
+        }
+
+        input.Close();
+    }
+    void SaveEditorProperties() {
+        FileOutput output{ "editor.properties" };
+
+        // Output the default template and project paths
+        output.Write(defaultTemplatePath); output.WriteBuffer('\n');
+        output.Write(defaultProjectPath);  output.WriteBuffer('\n');
+
+        // Output every template path
+        for(const auto& templatePath : templatePaths) {
+            output.Write(templatePath); output.WriteBuffer('\n');
+        }
+
+        output.Close();
+    }
+
     string GetDefaultTemplatePath() {
         return defaultTemplatePath;
     }
@@ -88,6 +126,9 @@ namespace wfe::editor {
     }
     void SetDefaultProjectPath(const string& newPath) {
         defaultProjectPath = newPath;
+    }
+    vector<string> GetTemplatePaths() {
+        return templatePaths;
     }
 
     WFE_EDITOR_WINDOW_TYPE("Editor Properties", RenderWindow)

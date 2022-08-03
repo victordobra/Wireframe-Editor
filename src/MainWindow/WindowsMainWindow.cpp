@@ -7,6 +7,7 @@
 #include "Vulkan/SwapChain.hpp"
 #include "Vulkan/ImGuiPipeline.hpp"
 #include "Base/Window.hpp"
+#include "Windows/EditorPropertiesWindow.hpp"
 #include "ProjectInfo.hpp"
 #include "imgui.hpp"
 #include "Core.hpp"
@@ -102,6 +103,8 @@ static void RegisterWindowClass() {
 }
 static void CreateHWnd() {
     wfe::editor::LoadWorkspace();
+    wfe::editor::LoadEditorProperties();
+    
     appName = wfe::editor::GetWorkspaceDir() + " - Wireframe Engine";
 
     // Create the window
@@ -125,7 +128,6 @@ static void CreateHWnd() {
     // Show and update the window
     ShowWindow(hWnd, SW_SHOWNORMAL);
     UpdateWindow(hWnd);
-    
 }
 
 // Windows functions
@@ -343,6 +345,7 @@ LRESULT CALLBACK WinProc(_In_ HWND hWindow, _In_ UINT msg, _In_ WPARAM wParam, _
         DestroyWindow(hWnd);
         break;
     case WM_DESTROY:
+        wfe::editor::SaveEditorProperties();
         wfe::editor::DeleteImGuiPipeline();
 
         ImGui::DestroyContext();
