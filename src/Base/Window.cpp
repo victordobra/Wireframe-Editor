@@ -1,5 +1,6 @@
 #include "Base/Window.hpp"
 #include "MainWindow/MainWindow.hpp"
+#include "Windows/EditorPropertiesWindow.hpp"
 
 namespace wfe::editor {
     // Variables
@@ -67,18 +68,19 @@ namespace wfe::editor {
             if(ImGui::BeginMenu("File")) {
                 if(ImGui::MenuItem("New project", "Ctrl+N")) {
                     // TODO: Creating a new project
-                    console::OutMessageFunction("New project");
                 }
 
                 ImGui::Separator();
 
                 if(ImGui::MenuItem("Open project", "Ctrl+O")) {
-                    // TODO: Create a load popup
+                    bool8_t canceled;
+                    string result = OpenFolderDialog(canceled, GetDefaultProjectPath());
+                    if(!canceled) {
+                        SetWorkspaceDir(result);
 
-                    if(loadCallback)
-                        loadCallback();
-
-                    console::OutMessageFunction("Loaded project");
+                        if(loadCallback)
+                            loadCallback();
+                    }
                 }
                 if(ImGui::BeginMenu("Open recent")) {
                     for(size_t i = 1; i < recentDirs.size(); ++i)

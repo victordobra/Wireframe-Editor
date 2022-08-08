@@ -14,12 +14,9 @@
 #include "Win32ToImGui.hpp"
 
 // Windows include
-#ifndef WIN32_LEAN_AND_MEAN
-#define WIN32_LEAN_AND_MEAN
-#endif
-
 #include <windows.h>
 #include <windowsx.h>
+#include <shlobj.h>
 
 // Variables
 wfe::string className = "Application";
@@ -106,7 +103,7 @@ static void CreateHWnd() {
     wfe::editor::LoadEditorProperties();
     
     appName = wfe::editor::GetWorkspaceDir() + " - Wireframe Engine";
-
+    
     // Create the window
     hWnd = CreateWindow(
         className.c_str(),
@@ -140,7 +137,6 @@ int main(int argc, char** args) {
         else if(!strcmp(args[i], "--novkdebug"))
             wfe::editor::DisableValidationLayers();
     }
-
     wfe::console::OpenLogFile();
     
     RegisterWindowClass();
@@ -377,6 +373,79 @@ wfe::string wfe::editor::GetMainWindowName() {
 void wfe::editor::SetMainWindowName(const wfe::string& newName) {
     appName = newName;
     SetWindowText(hWnd, appName.c_str());
+}
+
+wfe::string wfe::editor::OpenFolderDialog(wfe::bool8_t& canceled, const string& startingLocation) {
+    // Validate the window to avoid redrawing
+    ValidateRect(hWnd, NULL);
+
+    // Create the folder dialog
+    IFileDialog* folderDialog;
+    if(!SUCCEEDED(CoCreateInstance(CLSID_FileOpenDialog, NULL, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&folderDialog))))
+        console::OutFatalError("Failed to create folder open dialog!", 1);
+    
+    // Set the folder dialog properties
+    DWORD flags;
+    folderDialog->GetOptions(&flags);
+    flags |= FOS_PICKFOLDERS;
+    folderDialog->SetOptions(flags);
+
+    if(startingLocation.length()) { 
+        // Convert the starting location from ASCII to wide characters
+        size_t length = startingLocation.length();
+        charw_t* startingLocationW = new charw_t[length + 1];
+
+        mbstowcs(startingLocationW, startingLocation.c_str(), length);
+        startingLocationW[length] = 0;
+
+        // Create the PIDL
+        PIDLIST_ABSOLUTE pidl;
+        if(!SUCCEEDED(SHParseDisplayName(startingLocationW, NULL, &pidl, NULL, NULL)))
+            console::OutFatalError("Failed to parse display name!", 1);
+
+        // Create the start folder shell item
+        IShellItem* startFolder;
+        if(!SUCCEEDED(SHCreateShellItem(NULL, NULL, pidl, &startFolder)))
+            console::OutFatalError("Failed to set start folder!", 1);
+        
+        // Set the folder dialog starting folder
+        folderDialog->SetFolder(startFolder);
+
+        ILFree(pidl);
+    }
+
+    // Show the folder dialog
+    if(folderDialog->Show(hWnd) == HRESULT_FROM_WIN32(ERROR_CANCELLED)) {
+        canceled = true;
+        return "";
+    } else
+        canceled = false;
+    
+    // Get the results
+    IShellItem* shellItem;
+    if(!SUCCEEDED(folderDialog->GetResult(&shellItem)))
+        console::OutFatalError("Failed to get folder dialog results!", 1);
+    
+    LPWSTR resultW;
+    if(!SUCCEEDED(shellItem->GetDisplayName(SIGDN_DESKTOPABSOLUTEPARSING, &resultW)))
+        console::OutFatalError("Failed to get folder dialog results!", 1);
+    
+    // Covert from wide string to ASCII
+    size_t length = wcslen(resultW);
+    string result;
+    result.resize(length);
+
+    wcstombs(result.data(), resultW, length);
+    result[length] = 0;
+
+    // Release the shell item and folder dialog
+    shellItem->Release();
+    folderDialog->Release();
+
+    // Invalidate the window to reenable drawing
+    InvalidateRect(hWnd, NULL, false);
+
+    return result;
 }
 
 HWND wfe::editor::GetWindowHandle() {
