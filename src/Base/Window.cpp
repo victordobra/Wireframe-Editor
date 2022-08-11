@@ -1,6 +1,7 @@
 #include "Base/Window.hpp"
 #include "MainWindow/MainWindow.hpp"
 #include "Windows/EditorPropertiesWindow.hpp"
+#include "Windows/NewProjectWindow.hpp"
 
 namespace wfe::editor {
     // Variables
@@ -67,16 +68,21 @@ namespace wfe::editor {
             // Display basic file settings
             if(ImGui::BeginMenu("File")) {
                 if(ImGui::MenuItem("New project", "Ctrl+N")) {
-                    // TODO: Creating a new project
+                    // Create a new project
+                    CreateNewProject();
                 }
 
                 ImGui::Separator();
                 if(ImGui::MenuItem("Open project", "Ctrl+O")) {
+                    // Open a dialog to get the project location
                     bool8_t canceled;
-                    string result = OpenFolderDialog(canceled, GetDefaultProjectPath());
+                    string result = OpenFolderDialog(canceled, GetDefaultProjectLocation());
+                    
                     if(!canceled) {
+                        // Set the workspace dir
                         SetWorkspaceDir(result);
 
+                        // Call the load callback, if it exists
                         if(loadCallback)
                             loadCallback();
                     }
@@ -93,6 +99,7 @@ namespace wfe::editor {
                             // Set the workspace dir
                             SetWorkspaceDir(recentDir, false);
 
+                            // Call the save callback, if it exists
                             if(saveCallback)
                                 saveCallback();
                         }
@@ -110,6 +117,7 @@ namespace wfe::editor {
                 ImGui::Separator();
 
                 if(ImGui::MenuItem("Save", "Ctrl+S")) {
+                    // Call the save callback, if it exists
                     if(saveCallback)
                         saveCallback();
                 }

@@ -6,9 +6,9 @@ namespace wfe::editor {
     void LoadEditorProperties();
     void SaveEditorProperties();
 
-    string GetDefaultTemplatePath();
-    void SetDefaultTemplatePath(const string& newPath);
-    string GetDefaultProjectPath();
-    void SetDefaultProjectPath(const string& newPath);
-    vector<string> GetTemplatePaths();
+    string GetDefaultTemplateLocation();
+    void SetDefaultTemplateLocation(const string& newLocation);
+    string GetDefaultProjectLocation();
+    void SetDefaultProjectLocation(const string& newLocation);
+    vector<string> GetTemplateLocations();
 }

@@ -448,6 +448,40 @@ wfe::string wfe::editor::OpenFolderDialog(wfe::bool8_t& canceled, const string& 
     return result;
 }
 
+void wfe::editor::CopyFolder(const wfe::string& srcFolder, const wfe::string& dstFolder) {
+    // Validate the window rectangle to avoid redrawind
+    ValidateRect(hWnd, NULL);
+
+    // Create a copy of the source and destination folders to add double null termination
+    string srcFolderCopy = srcFolder;
+    if(srcFolderCopy[srcFolderCopy.length() - 1] != '/' && srcFolderCopy[srcFolderCopy.length() - 1] != '\\')
+        srcFolderCopy.append(1, '\\');
+    srcFolderCopy.append(1, '*');
+    srcFolderCopy.append(1, '\0');
+
+    string dstFolderCopy;
+    dstFolderCopy.append(1, '\0');
+    
+    // Set the copy info
+    SHFILEOPSTRUCT copyInfo;
+
+    copyInfo.hwnd = hWnd;
+    copyInfo.wFunc = FO_COPY;
+    copyInfo.pFrom = srcFolderCopy.c_str();
+    copyInfo.pTo = dstFolderCopy.c_str();
+    copyInfo.fFlags = FOF_SILENT;
+    copyInfo.fAnyOperationsAborted = FALSE;
+    copyInfo.hNameMappings = nullptr;
+    copyInfo.lpszProgressTitle = nullptr;
+    
+    // Execute the file operation
+    if(!SUCCEEDED(SHFileOperation(&copyInfo)))
+        console::OutFatalError("Failed to copy files!", 1);
+
+    // Invalidate the window rectangle to avoid redrawind
+    InvalidateRect(hWnd, NULL, FALSE);
+}
+
 HWND wfe::editor::GetWindowHandle() {
     return hWnd;
 }
