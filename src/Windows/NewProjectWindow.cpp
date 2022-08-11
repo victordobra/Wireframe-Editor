@@ -9,7 +9,7 @@ namespace wfe::editor {
 
     // Variables
     string projectLocation = "";
-    int32_t templateIndex;
+    int32_t templateIndex = -1;
 
     // Public functions
     static void RenderWindow() {

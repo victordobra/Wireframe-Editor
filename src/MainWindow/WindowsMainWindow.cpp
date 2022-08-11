@@ -459,7 +459,7 @@ void wfe::editor::CopyFolder(const wfe::string& srcFolder, const wfe::string& ds
     srcFolderCopy.append(1, '*');
     srcFolderCopy.append(1, '\0');
 
-    string dstFolderCopy;
+    string dstFolderCopy = dstFolder;
     dstFolderCopy.append(1, '\0');
     
     // Set the copy info
