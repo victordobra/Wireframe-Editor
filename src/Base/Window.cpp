@@ -71,7 +71,6 @@ namespace wfe::editor {
                 }
 
                 ImGui::Separator();
-
                 if(ImGui::MenuItem("Open project", "Ctrl+O")) {
                     bool8_t canceled;
                     string result = OpenFolderDialog(canceled, GetDefaultProjectPath());
@@ -98,6 +97,13 @@ namespace wfe::editor {
                                 saveCallback();
                         }
                     
+                    // Add an option to clear all recent dirs
+                    ImGui::Separator();
+                    if(ImGui::MenuItem("Clear recents", "Ctrl+R")) {
+                        recentDirs.clear();
+                        SaveWorkspace();
+                    }
+
                     ImGui::EndMenu();
                 }
 
