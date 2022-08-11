@@ -99,7 +99,7 @@ namespace wfe::editor {
                     
                     // Add an option to clear all recent dirs
                     ImGui::Separator();
-                    if(ImGui::MenuItem("Clear recents", "Ctrl+R")) {
+                    if(ImGui::MenuItem("Clear recents", nullptr)) {
                         recentDirs.clear();
                         SaveWorkspace();
                     }
