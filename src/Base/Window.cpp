@@ -63,6 +63,35 @@ namespace wfe::editor {
         ImGuiID dockSpaceID = ImGui::GetID("DockSpace");
         ImGui::DockSpace(dockSpaceID, ImVec2(0.f, 0.f), ImGuiDockNodeFlags_None);
 
+        // Handle the new project shortcut
+        if(ImGui::IsKeyDown(ImGuiKey_LeftCtrl) && ImGui::IsKeyPressed(ImGuiKey_N, false)) {
+            // Create a new project
+            CreateNewProject();
+        }
+        // Handle the open project shortcut
+        if(ImGui::IsKeyDown(ImGuiKey_LeftCtrl) && ImGui::IsKeyPressed(ImGuiKey_O, false)) {
+            // TODO: Add saving safety check
+
+            // Open a dialog to get the project location
+            bool8_t canceled;
+            string result = OpenFolderDialog(canceled, GetDefaultProjectLocation());
+            
+            if(!canceled) {
+                // Set the workspace dir
+                SetWorkspaceDir(result);
+
+                // Call the load callback, if it exists
+                if(loadCallback)
+                    loadCallback();
+            }
+        }
+        // Handle the save project shortcut
+        if(ImGui::IsKeyDown(ImGuiKey_LeftCtrl) && ImGui::IsKeyPressed(ImGuiKey_O, false)) { 
+            // Call the save callback, if it exists
+            if(saveCallback)
+                saveCallback();
+        }
+
         // Start the menu bar
         if(ImGui::BeginMenuBar()) {
             // Display basic file settings
@@ -74,6 +103,8 @@ namespace wfe::editor {
 
                 ImGui::Separator();
                 if(ImGui::MenuItem("Open project", "Ctrl+O")) {
+                    // TODO: Add saving safety check
+
                     // Open a dialog to get the project location
                     bool8_t canceled;
                     string result = OpenFolderDialog(canceled, GetDefaultProjectLocation());
@@ -88,9 +119,10 @@ namespace wfe::editor {
                     }
                 }
                 if(ImGui::BeginMenu("Open recent")) {
-                    for(size_t i = 1; i < recentDirs.size(); ++i)
-                        if(ImGui::MenuItem(recentDirs[i].c_str(), nullptr)) {
+                    for(size_t i = 0; i < recentDirs.size(); ++i)
+                        if(ImGui::MenuItem(recentDirs[i].c_str(), nullptr) && i) {
                             // TODO: Check if the path still exists
+                            // TODO: Add saving safety check
 
                             // Put the recent dir at the top
                             string recentDir = recentDirs[i];

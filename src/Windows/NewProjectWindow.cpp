@@ -15,7 +15,10 @@ namespace wfe::editor {
     static void RenderWindow() {
         WindowType& windowType = WindowType::windowTypes["New Project"];
 
+        ImGui::SetNextWindowSize(ImVec2(500.f, 200.f), ImGuiCond_FirstUseEver);
         if(ImGui::Begin("New Project", &windowType.open)) {
+            ImGui::PushItemWidth(-200.f);
+
             // Display the project path button
             if(ImGui::Button("...##projectPathButton")) {
                 // Open a dialog to get the project location
@@ -62,6 +65,9 @@ namespace wfe::editor {
                 projectLocation = "";
                 templateIndex = 0;
             }
+            
+            ImGui::PopItemWidth();
+
             ImGui::End();
         }
     }
