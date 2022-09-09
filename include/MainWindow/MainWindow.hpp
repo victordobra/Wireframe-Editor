@@ -2,6 +2,8 @@
 
 #include "BuildInfo.hpp"
 
-#ifdef PLATFORM_WINDOWS
+#if defined(PLATFORM_WINDOWS)
 #include "WindowsMainWindow.hpp"
+#elif defined(PLATFORM_LINUX)
+#include "LinuxMainWindow.hpp"
 #endif

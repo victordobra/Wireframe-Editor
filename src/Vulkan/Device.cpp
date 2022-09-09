@@ -7,17 +7,22 @@ namespace wfe::editor {
     const vector<const char_t*> validationLayers = { "VK_LAYER_KHRONOS_validation" };
     const vector<const char_t*> deviceExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
 
-#ifdef PLATFORM_WINDOWS
-#ifdef NDEBUG
-    const vector<const char_t*> requiredExtensions = { VK_KHR_SURFACE_EXTENSION_NAME, VK_KHR_WIN32_SURFACE_EXTENSION_NAME };
-#else
-    const vector<const char_t*> requiredExtensions = { VK_KHR_SURFACE_EXTENSION_NAME, VK_KHR_WIN32_SURFACE_EXTENSION_NAME, VK_EXT_DEBUG_UTILS_EXTENSION_NAME };
+    const vector<const char_t*> requiredExtensions = {
+        VK_KHR_SURFACE_EXTENSION_NAME
+#if defined(PLATFORM_WINDOWS)
+        , VK_KHR_WIN32_SURFACE_EXTENSION_NAME
+#elif defined(PLATFORM_LINUX)
+        , VK_KHR_XLIB_SURFACE_EXTENSION_NAME
 #endif
+#ifndef NDEBUG
+        , VK_EXT_DEBUG_UTILS_EXTENSION_NAME
 #endif
+    };
+    const vector<const char_t*> optionalExtensions = { };
 
     // Variables
     VkAllocationCallbacks* allocator = nullptr;
-
+ 
 #ifdef NDEBUG
     bool8_t enableValidationLayers = false;
 #else
@@ -25,11 +30,12 @@ namespace wfe::editor {
 #endif 
 
     VkInstance instance;
+    vector<const char_t*> enabledExtensions;
     VkDebugUtilsMessengerEXT debugMessenger;
     VkSurfaceKHR surface;
     VkPhysicalDevice physicalDevice;
     VkPhysicalDeviceProperties physicalDeviceProperties;
-    VkPhysicalDeviceFeatures physicalDeviceFeatures;
+    VkPhysicalDeviceFeatures physicalDeviceFeatures; 
     VkDevice device;
     VkQueue graphicsQueue, presentQueue;
     VkCommandPool commandPool;
@@ -71,12 +77,12 @@ namespace wfe::editor {
         // Get all of the available extensions
         uint32_t availableExtensionCount;
         vkEnumerateInstanceExtensionProperties(nullptr, &availableExtensionCount, nullptr);
-        vector<VkExtensionProperties> availableExtensions(availableExtensionCount);
-        vkEnumerateInstanceExtensionProperties(nullptr, &availableExtensionCount, availableExtensions.data());
+        vector<VkExtensionProperties> availableExtensionProperties(availableExtensionCount);
+        vkEnumerateInstanceExtensionProperties(nullptr, &availableExtensionCount, availableExtensionProperties.data());
 
         // Add all of the available extension names in an unordered set
         unordered_set<string> availableExtensionSet;
-        for(const auto& extension : availableExtensions)
+        for(const auto& extension : availableExtensionProperties)
             availableExtensionSet.insert(extension.extensionName);
 
         // Find all of the missing extensions
@@ -85,10 +91,17 @@ namespace wfe::editor {
         for(const auto* extension : requiredExtensions)
             if(!availableExtensionSet.count(extension))
                 missingExtensions += (string)extension + "; ";
+            else
+                enabledExtensions.push_back(extension);
         
         // Output an error if at least one of the extensions is missing
         if(missingExtensions.length())
             console::OutFatalError((string)"Failed to find all required extensions! Missing extensions: " + missingExtensions, 1);
+    
+        // Find every available optional extension
+        for(const auto* extension : optionalExtensions)
+            if(availableExtensionSet.count(extension))
+                enabledExtensions.push_back(extension);
     }
     static void CheckValidationLayerSupport() {
         // If validation layers shouldn't be enabled, exit the function
@@ -106,7 +119,7 @@ namespace wfe::editor {
         for(const auto& layer : availableLayers)
             availableLayerSet.insert(layer.layerName);
         
-        // Check if every layer is present
+        // Find all of the missing layers
         for(const auto* layer : validationLayers)
             if(!availableLayerSet.count(layer)) {
                 enableValidationLayers = false;
@@ -169,7 +182,7 @@ namespace wfe::editor {
 
         return supportDetails;
     }
-    static bool8_t CheckDeviceExtensionSupport(VkPhysicalDevice physicalDevice) {
+    static bool8_t CheckDeviceExtensionSupport(VkPhysicalDevice physicalDevice, uint32_t& optionalExtensionCount) {
         // Get all device extensions
         uint32_t availableExtensionCount;
         vkEnumerateDeviceExtensionProperties(physicalDevice, nullptr, &availableExtensionCount, nullptr);
@@ -186,19 +199,34 @@ namespace wfe::editor {
             if(!availableExtensionSet.count(extension))
                 return false;
         
+        // Count all available optional extensions
+        optionalExtensionCount = 0;
+        for(const auto* extension : optionalExtensions)
+            optionalExtensionCount += availableExtensionSet.count(extension);
+
         return true;
     }
-    static bool8_t IsDeviceSuitable(VkPhysicalDevice physicalDevice) {
+    static bool8_t IsDeviceSuitable(VkPhysicalDevice physicalDevice, uint32_t& score) {
+        // Get the queue family indices and swap chain support details
+        bool8_t extensionsSupported = CheckDeviceExtensionSupport(physicalDevice, score);
         QueueFamilyIndices indices = FindQueueFamilies(physicalDevice);
-        bool8_t extensionsSupported = CheckDeviceExtensionSupport(physicalDevice);
 
-        bool8_t swapChainAdequate = false;
-        if(extensionsSupported) {
-            SwapChainSupportDetails supportDetails = QuerySwapChainSupport(physicalDevice);
-            swapChainAdequate = !supportDetails.formats.empty() && !supportDetails.presentModes.empty();
-        }
+        // Checking if the indices are complete early to avoid a validation layer error
+        if(!indices.IsComplete())
+            return false;
 
-        return indices.IsComplete() && extensionsSupported && swapChainAdequate;
+        SwapChainSupportDetails supportDetails = QuerySwapChainSupport(physicalDevice);
+
+        // Get the physical device properties and features
+        VkPhysicalDeviceProperties properties;
+        vkGetPhysicalDeviceProperties(physicalDevice, &properties);
+        VkPhysicalDeviceFeatures features;
+        vkGetPhysicalDeviceFeatures(physicalDevice, &features);
+
+        // Calculate the score
+        score += properties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU;
+
+        return indices.IsComplete() && supportDetails.IsAdequate() && extensionsSupported;
     }
     static void SetStageAndAccess(VkImageLayout layout, VkAccessFlags& accessMask, VkPipelineStageFlags& stage) {
         // Check for every supported layout
@@ -260,17 +288,17 @@ namespace wfe::editor {
         createInfo.pApplicationInfo = &appInfo;
 
         if(enableValidationLayers) {
+            createInfo.pNext = &debugMessengerInfo;
+            
             createInfo.enabledLayerCount = validationLayers.size();
             createInfo.ppEnabledLayerNames = validationLayers.data();
-
-            createInfo.pNext = &debugMessengerInfo;
         } else {
             createInfo.enabledLayerCount = 0;
             createInfo.ppEnabledLayerNames = nullptr;
         }
 
-        createInfo.enabledExtensionCount = requiredExtensions.size();
-        createInfo.ppEnabledExtensionNames = requiredExtensions.data();
+        createInfo.enabledExtensionCount = enabledExtensions.size();
+        createInfo.ppEnabledExtensionNames = enabledExtensions.data();
 
         // Create the instance
         auto result = vkCreateInstance(&createInfo, allocator, &instance);
@@ -282,6 +310,9 @@ namespace wfe::editor {
         // If validation layers shouldn't be enabled, exit the function
         if(!enableValidationLayers)
             return;
+
+        // Check for validation layer support
+        CheckValidationLayerSupport();
 
         // Set the debug messenger create info
         VkDebugUtilsMessengerCreateInfoEXT createInfo;
@@ -301,18 +332,33 @@ namespace wfe::editor {
         console::OutMessageFunction("Created Vulkan debug messenger successfully.");
     }
     static void CreateSurface() {
-#ifdef PLATFORM_WINDOWS
+#if defined(PLATFORM_WINDOWS)
         // Set the surface create info
         VkWin32SurfaceCreateInfoKHR createInfo;
         
         createInfo.sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR;
         createInfo.pNext = nullptr;
         createInfo.flags = 0;
-        createInfo.hwnd = GetWindowHandle();
+        createInfo.hwnd = GetMainWindowHandle();
         createInfo.hinstance = GetWindowsInstance();
 
         // Create the surface
         auto result = vkCreateWin32SurfaceKHR(instance, &createInfo, allocator, &surface);
+        if(result != VK_SUCCESS)
+            console::OutFatalError((string)"Failed to create surface! Error code: " + VkResultToString(result), 1);
+        console::OutMessageFunction("Created Vulkan window surface successfully.");
+#elif defined(PLATFORM_LINUX)
+        // Set the surface create info
+        VkXlibSurfaceCreateInfoKHR createInfo;
+        
+        createInfo.sType = VK_STRUCTURE_TYPE_XLIB_SURFACE_CREATE_INFO_KHR;
+        createInfo.pNext = nullptr;
+        createInfo.flags = 0;
+        createInfo.dpy = GetScreenConnection();
+        createInfo.window = GetWindowHandle();
+
+        // Create the surface
+        auto result = vkCreateXlibSurfaceKHR(instance, &createInfo, allocator, &surface);
         if(result != VK_SUCCESS)
             console::OutFatalError((string)"Failed to create surface! Error code: " + VkResultToString(result), 1);
         console::OutMessageFunction("Created Vulkan window surface successfully.");
@@ -325,18 +371,23 @@ namespace wfe::editor {
         vector<VkPhysicalDevice> physicalDevices(physicalDeviceCount);
         vkEnumeratePhysicalDevices(instance,&physicalDeviceCount, physicalDevices.data());
 
-        // Loop through all devices and pick the first one
-        for(auto pDevice : physicalDevices)
-            if(IsDeviceSuitable(pDevice)) {
+        // Loop through all devices and pick the one with the highest score
+        uint32_t maxScore = 0;
+        for(auto pDevice : physicalDevices) {
+            uint32_t score;
+            if(IsDeviceSuitable(pDevice, score) && score >= maxScore) {
                 physicalDevice = pDevice;
-                break;
+                maxScore = score;
             }
+        }
 
         if(physicalDevice == VK_NULL_HANDLE)
             console::OutFatalError("Failed to find a suitable GPU!", 1);
         
-        // Output the device's name
+        // Save the physical device properties and features
         vkGetPhysicalDeviceProperties(physicalDevice, &physicalDeviceProperties);
+        vkGetPhysicalDeviceFeatures(physicalDevice, &physicalDeviceFeatures);
+
         console::OutMessageFunction((string)"Found suitable GPU: " + physicalDeviceProperties.deviceName + ".");
     }
     static void CreateLogicalDevice() {

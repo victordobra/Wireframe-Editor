@@ -2,6 +2,10 @@
 include(./.env.cmake OPTIONAL RESULT_VARIABLE LOCAL_ENV)
 message(STATUS "Local .env file included successfully.")
 
+# Include the local .env file
+include(./.build.cmake OPTIONAL RESULT_VARIABLE LOCAL_BUILD)
+message(STATUS "Local .build file included successfully.")
+
 # Set the minumum required version
 cmake_minimum_required(VERSION ${CMAKE_MIN_VERSION})
 message(STATUS "CMake minimum required version set to ${CMAKE_MIN_VERSION}.")
@@ -44,7 +48,12 @@ message(STATUS "Include directories added.")
 # Add the link directories and link the libraries
 target_link_directories(${PROJECT_NAME} PUBLIC ${PROJECT_SOURCE_DIR}/external/Core/lib ${PROJECT_SOURCE_DIR}/external/ImGui/lib ${PROJECT_SOURCE_DIR}/external/Vulkan/lib)
 message(STATUS "Link directories added.")
-target_link_libraries(${PROJECT_NAME} ImGui-x86_64 Wireframe-Core-x86_64 vulkan-x86_64)
+
+if(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
+    target_link_libraries(${PROJECT_NAME} ImGui-x86_64 Wireframe-Core-x86_64 vulkan-x86_64)
+elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
+    target_link_libraries(${PROJECT_NAME} ImGui-${TARGET_ARCH} Wireframe-Core-${TARGET_ARCH} vulkan X11 xkbcommon)
+endif()
 message(STATUS "Link libraries added.")
 
 # Add the precompiled header

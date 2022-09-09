@@ -164,7 +164,6 @@ LRESULT CALLBACK WinProc(_In_ HWND hWindow, _In_ UINT msg, _In_ WPARAM wParam, _
 
         ImGui::GetIO().BackendPlatformName = "WFE-Win32-Backend";
         ImGui::GetIO().BackendFlags |= ImGuiBackendFlags_HasMouseCursors;
-        ImGui::GetIO().BackendFlags |= ImGuiBackendFlags_HasSetMousePos;
 
         ImGui::GetIO().LogFilename = "imgui-log.txt";
         ImGui::GetIO().IniFilename = nullptr;

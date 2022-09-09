@@ -638,15 +638,15 @@ namespace wfe::editor {
 
         if(drawData->TotalVtxCount) {
             // Create the vertex and index buffers
-            VkDeviceSize vertexBufferSize = drawData->TotalVtxCount * sizeof(ImDrawVert);
-            VkDeviceSize indexBufferSize = drawData->TotalIdxCount * sizeof(ImDrawIdx);
+            VkDeviceSize vertexBufferSize = PadUniformBufferSize(drawData->TotalVtxCount * sizeof(ImDrawVert));
+            VkDeviceSize indexBufferSize = PadUniformBufferSize(drawData->TotalIdxCount * sizeof(ImDrawIdx));
 
             CreateBuffer(vertexBufferSize, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT, vertexBuffer, vertexBufferMemory);
             CreateBuffer(indexBufferSize, VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT, indexBuffer, indexBufferMemory);
 
             // Write to the vertex and index buffers
-            ImDrawVert *dstVert;
-            ImDrawIdx *dstInd;
+            ImDrawVert* dstVert;
+            ImDrawIdx* dstInd;
 
             vkMapMemory(GetDevice(), vertexBufferMemory, 0, vertexBufferSize, 0, (void**)&dstVert);
             vkMapMemory(GetDevice(), indexBufferMemory, 0, indexBufferSize, 0, (void**)&dstInd);

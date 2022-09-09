@@ -1,3 +1,7 @@
+#include "BuildInfo.hpp"
+
+#ifdef PLATFORM_WINDOWS
+
 #include "Win32ToImGui.hpp"
 
 ImGuiKey Win32KeyToImGuiKey(wfe::int32_t key) {
@@ -242,3 +246,5 @@ LPTSTR ImGuiCursorToWin32CursorType(ImGuiMouseCursor cursor) {
         return IDC_ARROW;
     }
 }
+
+#endif

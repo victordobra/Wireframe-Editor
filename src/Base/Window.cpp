@@ -153,13 +153,6 @@ namespace wfe::editor {
                     if(saveCallback)
                         saveCallback();
                 }
-
-                ImGui::Separator();
-
-                if(ImGui::MenuItem("Exit", nullptr)) {
-                    // Exit the program
-                    exit(0);
-                }
                 
                 ImGui::EndMenu();
             }
