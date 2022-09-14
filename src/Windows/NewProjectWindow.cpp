@@ -13,7 +13,7 @@ namespace wfe::editor {
 
     // Public functions
     static void RenderWindow() {
-        WindowType& windowType = WindowType::windowTypes["New Project"];
+        WindowType& windowType = WindowType::windowTypes->at("New Project");
 
         ImGui::SetNextWindowSize(ImVec2(500.f, 200.f), ImGuiCond_FirstUseEver);
         if(ImGui::Begin("New Project", &windowType.open)) {
@@ -72,7 +72,7 @@ namespace wfe::editor {
         }
     }
     void CreateNewProject() {
-        WindowType::windowTypes["New Project"].open = true;
+        WindowType::windowTypes->at("New Project").open = true;
     }
 
     WFE_EDITOR_WINDOW_TYPE("New Project", RenderWindow)

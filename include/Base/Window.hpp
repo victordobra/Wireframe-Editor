@@ -5,7 +5,7 @@
 
 namespace wfe::editor {
     struct WindowType {
-        static map<string, WindowType> windowTypes;
+        static map<string, WindowType>* windowTypes;
 
         string name;
         void(*render)();
@@ -49,7 +49,7 @@ namespace { \
             windowType.render = winRender; \
             windowType.open = false; \
  \
-            wfe::editor::WindowType::windowTypes.insert({ windowType.name, windowType }); \
+            wfe::editor::WindowType::windowTypes->insert({ windowType.name, windowType }); \
         } \
     }; \
  \

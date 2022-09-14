@@ -50,7 +50,7 @@ target_link_directories(${PROJECT_NAME} PUBLIC ${PROJECT_SOURCE_DIR}/external/Co
 message(STATUS "Link directories added.")
 
 if(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
-    target_link_libraries(${PROJECT_NAME} ImGui-x86_64 Wireframe-Core-x86_64 vulkan-x86_64)
+    target_link_libraries(${PROJECT_NAME} ImGui-${TARGET_ARCH}Wireframe-Core-${TARGET_ARCH}vulkan-${TARGET_ARCH})
 elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
     target_link_libraries(${PROJECT_NAME} ImGui-${TARGET_ARCH} Wireframe-Core-${TARGET_ARCH} vulkan X11 xkbcommon)
 endif()
@@ -59,6 +59,15 @@ message(STATUS "Link libraries added.")
 # Add the precompiled header
 target_precompile_headers(${PROJECT_NAME} PUBLIC ${PROJECT_SOURCE_DIR}/include/WireframeEngineEditor.hpp)
 message(STATUS "Precompiled header added.")
+
+# Create the wrapper library
+add_library(Wireframe-Editor ${PROJECT_SOURCE_DIR}/wrapper/Wrapper.cpp)
+target_compile_features(Wireframe-Editor PUBLIC cxx_std_20)
+message(STATUS "Wrapper library created successfully")
+
+# Add the include directories
+target_include_directories(Wireframe-Editor PUBLIC ${PROJECT_SOURCE_DIR}/include ${PROJECT_SOURCE_DIR}/info ${PROJECT_SOURCE_DIR}/src ${PROJECT_SOURCE_DIR}/external/ImGui/include ${PROJECT_SOURCE_DIR}/external/Core/include ${PROJECT_SOURCE_DIR}/external/Vulkan/include)
+message(STATUS "Include directories added")
 
 set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})
 include(CPack)

@@ -24,8 +24,8 @@ namespace wfe::editor {
     /// @param dstFolder The path of the folder to copy to.
     void CopyFolder(const string& srcFolder, const string& dstFolder);
 
-    /// @brief Returns the window's handle. Meant for internal use.
+    /// @brief Returns the window's handle. Internal use only.
     HWND GetWindowHandle();
-    /// @brief Returns the Windows instance's handle. Meant for internal use.
+    /// @brief Returns the Windows instance's handle. Internal use only.
     HINSTANCE GetWindowsInstance();
 }

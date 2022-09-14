@@ -5,7 +5,9 @@
 
 namespace wfe::editor {
     // Variables
-    constinit map<string, WindowType> WindowType::windowTypes;
+    constinit map<string, WindowType> windowTypesInternal;
+
+    constinit map<string, WindowType>* WindowType::windowTypes = &windowTypesInternal;
 
     constinit LoadCallback loadCallback = 0;
     constinit SaveCallback saveCallback = 0;
@@ -119,8 +121,8 @@ namespace wfe::editor {
                     }
                 }
                 if(ImGui::BeginMenu("Open recent")) {
-                    for(size_t i = 0; i < recentDirs.size(); ++i)
-                        if(ImGui::MenuItem(recentDirs[i].c_str(), nullptr) && i) {
+                    for(size_t i = 1; i < recentDirs.size(); ++i)
+                        if(ImGui::MenuItem(recentDirs[i].c_str(), nullptr)) {
                             // TODO: Check if the path still exists
                             // TODO: Add saving safety check
 
@@ -158,7 +160,7 @@ namespace wfe::editor {
             }
             // Display every window type
             if(ImGui::BeginMenu("Windows")) {
-                for(auto& windowType : WindowType::windowTypes)
+                for(auto& windowType : *WindowType::windowTypes)
                     ImGui::MenuItem(windowType.val2.name.c_str(), nullptr, &windowType.val2.open);
                 ImGui::EndMenu();
             }
@@ -167,7 +169,7 @@ namespace wfe::editor {
         }
 
         // Render every window
-        for(auto& windowType : WindowType::windowTypes)
+        for(auto& windowType : *WindowType::windowTypes)
             if(windowType.val2.open)
                 windowType.val2.render();
 

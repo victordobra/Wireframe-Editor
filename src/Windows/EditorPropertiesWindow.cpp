@@ -12,9 +12,9 @@ namespace wfe::editor {
 
     // Public functions
     static void RenderWindow() {
-        WindowType& windowType = WindowType::windowTypes["Editor Properties"];
+        WindowType& windowType = WindowType::windowTypes->at("Editor Properties");
 
-        ImGui::SetNextWindowSize(ImVec2(500.f, 400.f), ImGuiCond_FirstUseEver);
+        ImGui::SetNextWindowSize(ImVec2(600.f, 400.f), ImGuiCond_FirstUseEver);
         if(ImGui::Begin("Editor Properties", &windowType.open)) {
             ImGui::PushItemWidth(-200.f);
 

@@ -21,9 +21,9 @@ namespace wfe::editor {
         }
     };
 
-    /// @brief Creates the Vulkan device. Internal use only
+    /// @brief Creates the Vulkan device. Internal use only.
     void CreateDevice();
-    /// @brief Deletes the Vulkan device. Internal use only
+    /// @brief Deletes the Vulkan device. Internal use only.
     void DeleteDevice();
 
     /// @brief Returns the Vulkan allocator.

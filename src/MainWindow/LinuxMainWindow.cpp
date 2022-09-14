@@ -239,7 +239,7 @@ wfe::string wfe::editor::OpenFolderDialog(wfe::bool8_t& canceled, const wfe::str
 
     // Read the folder location
     char_t buffer[512];
-    fgets(buffer, 512, stream);
+    char_t* result = fgets(buffer, 512, stream);
 
     if(WEXITSTATUS(pclose(stream))) {
         canceled = true;
