@@ -63,6 +63,7 @@ message(STATUS "Precompiled header added.")
 # Create the wrapper library
 add_library(Wireframe-Editor ${PROJECT_SOURCE_DIR}/wrapper/Wrapper.cpp)
 target_compile_features(Wireframe-Editor PUBLIC cxx_std_20)
+target_compile_options(Wireframe-Editor PUBLIC -fPIC)
 message(STATUS "Wrapper library created successfully")
 
 # Add the include directories
