@@ -516,7 +516,7 @@ namespace wfe {
             // Erase the element at the specified position
             --_size;
 
-            size_t ind = pos - (size_t)_pairs;
+            size_t ind = (size_t)pos - (size_t)_pairs;
             for(size_t i = ind; i < _size - 1; ++i)
                 _pairs[i] = _pairs[i + 1];
             

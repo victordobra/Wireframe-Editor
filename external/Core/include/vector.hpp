@@ -100,8 +100,7 @@ namespace wfe {
         }
 
         reference operator[](size_type ind) {
-            if(ind >= _size)
-                assert((ind < _size) && "Index is out of the vector's range!");
+            assert((ind < _size) && "Index is out of the vector's range!");
 
             return _data[ind];
         }

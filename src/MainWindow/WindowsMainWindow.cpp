@@ -366,7 +366,7 @@ wfe::size_t wfe::editor::GetMainWindowHeight() {
     return windowHeight;
 }
 
-wfe::string wfe::editor::GetMainWindowName() {
+const wfe::string& wfe::editor::GetMainWindowName() {
     return appName;
 }
 void wfe::editor::SetMainWindowName(const wfe::string& newName) {

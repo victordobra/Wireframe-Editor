@@ -72,7 +72,7 @@ namespace wfe::editor {
         return editorCallbacks.getMainWindowHeight();
     }
 
-    string GetMainWindowName() {
+    const string& GetMainWindowName() {
         return editorCallbacks.getMainWindowName();
     }
     void SetMainWindowName(const string& newName) {

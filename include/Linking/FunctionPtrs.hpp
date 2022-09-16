@@ -28,7 +28,7 @@ namespace wfe::editor {
     typedef size_t(*PtrFn_GetMainWindowWidth)();
     typedef size_t(*PtrFn_GetMainWindowHeight)();
 
-    typedef string(*PtrFn_GetMainWindowName)();
+    typedef const string&(*PtrFn_GetMainWindowName)();
     typedef void(*PtrFn_SetMainWindowName)(const string&);
 
     typedef string(*PtrFn_OpenFolderDialog)(bool8_t&, const string&);
@@ -221,5 +221,5 @@ namespace wfe::editor {
         map<string, WindowType>* windowTypeMap;
     };
 
-    void GenerateEditorCallbacks(EditorCallbacks& callbacks);
+    void GenerateEditorCallbacks(EditorCallbacks& callbacks, map<string, WindowType>* windowTypeMap);
 }

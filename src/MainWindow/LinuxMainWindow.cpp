@@ -46,6 +46,7 @@ static void ConnectToXcb() {
 static void CreateWindow() {
     // Load the editor properties
     wfe::editor::LoadEditorProperties();
+    wfe::editor::LoadWorkspace();
 
     // Create the window
     window = XCreateSimpleWindow(display, screen->root, 0, 0, windowWidth, windowHeight, 0, screen->black_pixel, screen->black_pixel);
@@ -163,6 +164,7 @@ static void ProcessEvent(const XEvent& event) {
     case ClientMessage:
         if(event.xclient.data.l[0] == wmDeleteMessage) {
             wfe::editor::SaveEditorProperties();
+            wfe::editor::CloseWorkspace();
             running = false;
         }
         break;
@@ -224,12 +226,14 @@ wfe::size_t wfe::editor::GetMainWindowHeight() {
     return windowHeight;
 }
 
-wfe::string wfe::editor::GetMainWindowName() {
+const wfe::string& wfe::editor::GetMainWindowName() {
     return windowName;
 }
 void wfe::editor::SetMainWindowName(const wfe::string& newName) {
-    windowName = newName;
-    XStoreName(display, window, windowName.c_str());
+    if(window) {
+        windowName = newName;
+        XStoreName(display, window, windowName.c_str());
+    }
 }
 
 wfe::string wfe::editor::OpenFolderDialog(wfe::bool8_t& canceled, const wfe::string& startingLocation) {

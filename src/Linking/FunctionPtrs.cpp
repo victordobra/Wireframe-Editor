@@ -1,7 +1,7 @@
 #include "WireframeEngineEditor.hpp"
 
 namespace wfe::editor {
-    void GenerateEditorCallbacks(EditorCallbacks& callbacks) {
+    void GenerateEditorCallbacks(EditorCallbacks& callbacks, map<string, WindowType>* windowTypeMap) {
         callbacks.loadWorkspace = LoadWorkspace;
         callbacks.saveWorkspace = SaveWorkspace;
         callbacks.renderWindows = RenderWindows;
@@ -97,6 +97,6 @@ namespace wfe::editor {
 
         callbacks.createNewProject = CreateNewProject;
 
-        callbacks.windowTypeMap = WindowType::windowTypes;
+        callbacks.windowTypeMap = windowTypeMap;
     }
 }

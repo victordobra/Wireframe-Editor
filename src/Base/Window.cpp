@@ -2,6 +2,8 @@
 #include "MainWindow/MainWindow.hpp"
 #include "Windows/EditorPropertiesWindow.hpp"
 #include "Windows/NewProjectWindow.hpp"
+#include "Linking/FunctionPtrs.hpp"
+#include <dlfcn.h>
 
 namespace wfe::editor {
     // Variables
@@ -14,6 +16,7 @@ namespace wfe::editor {
 
     string workspaceDir = "";
     vector<string> recentDirs;
+    void* workspaceDynamicLib;
 
     // Public functions
     void LoadWorkspace() {
@@ -32,7 +35,7 @@ namespace wfe::editor {
 
         // Set the workspace dir as the most recent dir (if it exists)
         if(recentDirs.size())
-            workspaceDir = recentDirs[0];
+            SetWorkspaceDir(recentDirs[0]);
     }
     void SaveWorkspace() {
         FileOutput output("recent.info");
@@ -155,6 +158,14 @@ namespace wfe::editor {
                     if(saveCallback)
                         saveCallback();
                 }
+
+                ImGui::Separator();
+
+                if(ImGui::MenuItem("Close", nullptr)) {
+                    // TODO: Add saving safety check
+
+                    CloseWorkspace();
+                }
                 
                 ImGui::EndMenu();
             }
@@ -194,6 +205,8 @@ namespace wfe::editor {
         return workspaceDir;
     }
     void SetWorkspaceDir(const string& newWorkspaceDir, bool8_t removeFromRecents) {
+        CloseWorkspace();
+
         workspaceDir = newWorkspaceDir;
 
         // Remove from the recents list if needed
@@ -211,5 +224,58 @@ namespace wfe::editor {
 
         // Set the main window name
         SetMainWindowName(workspaceDir + " - Wireframe Engine");
+
+        // Link the project's dynamic library
+#if defined(PLATFORM_WINDOWS)
+        string workspaceDynamicLibPath = workspaceDir + "build/libEditorLib.dll";
+#elif defined(PLATFORM_LINUX)
+        string workspaceDynamicLibPath = workspaceDir + "build/libEditorLib.so";
+#endif
+        workspaceDynamicLib = dlopen(workspaceDynamicLibPath.c_str(), RTLD_LAZY);
+
+        // Set all callbacks
+        using SetCallbacks = void(*)(const EditorCallbacks&);
+        SetCallbacks setCallbacks = (SetCallbacks)dlsym(workspaceDynamicLib, "SetCallbacks");
+
+        EditorCallbacks callbacks;
+        GenerateEditorCallbacks(callbacks, &windowTypesInternal);
+
+        if(setCallbacks)
+            setCallbacks(callbacks);
+
+        console::OutMessageFunction((string)"Opened " + workspaceDir);
+    }
+    void CloseWorkspace() {
+        if(workspaceDynamicLib) {
+            // Store all messages
+            vector<console::Message> messages = console::GetMessages();
+
+            // Close the dynamic lib
+            dlclose(workspaceDynamicLib);
+            workspaceDynamicLib = nullptr;
+
+            // Set the pointer in the message vector to a nullptr, should modify this
+            *((void**)&console::GetMessages() + 2) = nullptr;
+            console::GetMessages() = messages;
+
+            // Set the pointer in the window's name to a nullptr, should also modify this
+            *((void**)&GetMainWindowName()) = nullptr;
+
+            // Close and reopen the log file in case it was already closed
+            console::OpenLogFile();
+
+            // Remove all windows except the main editor windows
+            pair<string, WindowType>* ptr = WindowType::windowTypes->begin();
+            while(WindowType::windowTypes->size() > 2)
+                if(ptr->val1 != "Editor Properties" && ptr->val1 != "New Project")
+                    WindowType::windowTypes->erase(ptr);
+                else
+                    ++ptr;
+            
+            console::OutMessageFunction((string)"Closed " + workspaceDir);
+            workspaceDir = "";
+
+            SetMainWindowName("Wireframe Engine");
+        }
     }
 }
