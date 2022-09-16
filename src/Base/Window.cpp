@@ -11,8 +11,8 @@ namespace wfe::editor {
 
     constinit map<string, WindowType>* WindowType::windowTypes = &windowTypesInternal;
 
-    constinit LoadCallback loadCallback = 0;
-    constinit SaveCallback saveCallback = 0;
+    constinit LoadCallback loadCallback;
+    constinit SaveCallback saveCallback;
 
     string workspaceDir = "";
     vector<string> recentDirs;
@@ -274,4 +274,6 @@ namespace wfe::editor {
             SetMainWindowName("Wireframe Engine");
         }
     }
+
+    WFE_EDITOR_SET_LOAD_CALLBACK((LoadCallback)0xffffffff)
 }

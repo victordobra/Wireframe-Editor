@@ -2,11 +2,8 @@
 
 namespace wfe::editor {
     // Variables
-    map<string, WindowType> windowTypesPlaceholder;
-    LoadCallback loadCallbackPlaceholder;
-    SaveCallback saveCallbackPlaceholder;
-
-    map<string, WindowType>* WindowType::windowTypes = &windowTypesPlaceholder;
+    constinit map<string, WindowType> windowTypesPlaceholder;
+    constinit map<string, WindowType>* WindowType::windowTypes = &windowTypesPlaceholder;
 
     EditorCallbacks editorCallbacks;
 
@@ -14,16 +11,6 @@ namespace wfe::editor {
     static void SetCallbacks(const EditorCallbacks& callbacks) {
         // Set the new editor callbacks
         editorCallbacks = callbacks;
-
-        // Move all window types from the placeholder
-        for(const auto& pair : windowTypesPlaceholder)
-            editorCallbacks.windowTypeMap->insert(pair);
-        
-        WindowType::windowTypes = editorCallbacks.windowTypeMap;
-
-        // Set the load and save callback
-        SetLoadCallback(loadCallbackPlaceholder);
-        SetSaveCallback(saveCallbackPlaceholder);
     }
 
     // Public functions
@@ -38,24 +25,18 @@ namespace wfe::editor {
     }
 
     LoadCallback GetLoadCallback() {
-        if(editorCallbacks.getLoadCallback)
-            return editorCallbacks.getLoadCallback();
-        return loadCallbackPlaceholder;
+        return editorCallbacks.getLoadCallback();
     }
     void SetLoadCallback(LoadCallback newLoadCallback) {
         if(editorCallbacks.setLoadCallback)
             editorCallbacks.setLoadCallback(newLoadCallback);
-        loadCallbackPlaceholder = newLoadCallback;
     }
     SaveCallback GetSaveCallback() {
-        if(editorCallbacks.getSaveCallback)
-            return editorCallbacks.getSaveCallback();
-        return saveCallbackPlaceholder;
+        return editorCallbacks.getSaveCallback();
     }
     void SetSaveCallback(SaveCallback newSaveCallback) {
         if(editorCallbacks.setSaveCallback)
             editorCallbacks.setSaveCallback(newSaveCallback);
-        saveCallbackPlaceholder = newSaveCallback;
     }
 
     string GetWorkspaceDir() {
