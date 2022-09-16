@@ -13,6 +13,7 @@ namespace wfe::editor {
 
         callbacks.getWorkspaceDir = GetWorkspaceDir;
         callbacks.setWorkspaceDir = SetWorkspaceDir;
+        callbacks.closeWorkspace = CloseWorkspace;
 
         callbacks.getMainWindowWidth = GetMainWindowWidth;
         callbacks.getMainWindowHeight = GetMainWindowHeight;

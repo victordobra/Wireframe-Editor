@@ -62,7 +62,10 @@ namespace wfe::editor {
         return editorCallbacks.getWorkspaceDir();
     }
     void SetWorkspaceDir(const string& newWorkspaceDir, bool8_t removeFromRecents) {
-        return editorCallbacks.setWorkspaceDir(newWorkspaceDir, removeFromRecents);
+        editorCallbacks.setWorkspaceDir(newWorkspaceDir, removeFromRecents);
+    }
+    void CloseWorkspace() {
+        editorCallbacks.closeWorkspace();
     }
     
     size_t GetMainWindowWidth() {

@@ -23,6 +23,7 @@ namespace wfe::editor {
 
     typedef string(*PtrFn_GetWorkspaceDir)();
     typedef void(*PtrFn_SetWorkspaceDir)(const string&, bool8_t);
+    typedef void(*PtrFn_CloseWorkspace)();
 
     // Window/MainWindow.hpp
     typedef size_t(*PtrFn_GetMainWindowWidth)();
@@ -134,6 +135,7 @@ namespace wfe::editor {
 
         PtrFn_GetWorkspaceDir getWorkspaceDir;
         PtrFn_SetWorkspaceDir setWorkspaceDir;
+        PtrFn_CloseWorkspace closeWorkspace;
 
         PtrFn_GetMainWindowWidth getMainWindowWidth;
         PtrFn_GetMainWindowHeight getMainWindowHeight;
