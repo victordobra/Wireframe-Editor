@@ -29,7 +29,7 @@ namespace wfe::editor {
     bool8_t enableValidationLayers = true;
 #endif 
 
-    VkInstance instance;
+    VkInstance instance = (VkInstance)0xffffffff;
     vector<const char_t*> enabledExtensions;
     VkDebugUtilsMessengerEXT debugMessenger;
     VkSurfaceKHR surface;
