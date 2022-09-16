@@ -81,7 +81,9 @@ namespace wfe::editor {
         return editorCallbacks.getVulkanAllocator();
     }
     VkInstance GetVulkanInstance() {
-        return editorCallbacks.getVulkanInstance();
+        if(editorCallbacks.getVulkanInstance)
+            return editorCallbacks.getVulkanInstance();
+        return (VkInstance)nullptr;
     }
     VkPhysicalDevice GetPhysicalDevice() {
         return editorCallbacks.getPhysicalDevice();
