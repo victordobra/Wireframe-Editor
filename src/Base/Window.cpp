@@ -84,10 +84,6 @@ namespace wfe::editor {
             if(!canceled) {
                 // Set the workspace dir
                 SetWorkspaceDir(result);
-
-                // Call the load callback, if it exists
-                if(loadCallback)
-                    loadCallback();
             }
         }
         // Handle the save project shortcut
@@ -117,10 +113,6 @@ namespace wfe::editor {
                     if(!canceled) {
                         // Set the workspace dir
                         SetWorkspaceDir(result);
-
-                        // Call the load callback, if it exists
-                        if(loadCallback)
-                            loadCallback();
                     }
                 }
                 if(ImGui::BeginMenu("Open recent")) {
@@ -242,6 +234,10 @@ namespace wfe::editor {
 
         if(setCallbacks)
             setCallbacks(callbacks);
+
+        // Call the load callback, if it exists
+        if(loadCallback)
+            loadCallback();
 
         console::OutMessageFunction((string)"Opened " + workspaceDir);
     }
