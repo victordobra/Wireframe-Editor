@@ -81,21 +81,66 @@ static void SetupImGui() {
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
 
-    ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_DockingEnable;
-    ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+    auto& io = ImGui::GetIO();
 
-    ImGui::GetIO().BackendPlatformName = "WFE-Linux-Backend";
+    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
 
-    ImGui::GetIO().LogFilename = "imgui-log.txt";
-    ImGui::GetIO().IniFilename = nullptr;
+    io.BackendPlatformName = "WFE-Linux-Backend";
+
+    io.LogFilename = "imgui-log.txt";
+    io.IniFilename = nullptr;
     
     // TODO: Implement clipboard callbacks
-    ImGui::GetIO().GetClipboardTextFn = nullptr;
-    ImGui::GetIO().SetClipboardTextFn = nullptr;
+    io.GetClipboardTextFn = nullptr;
+    io.SetClipboardTextFn = nullptr;
 
-    ImGui::GetIO().DisplaySize = { (wfe::float32_t)windowWidth, (wfe::float32_t)windowHeight };
+    io.DisplaySize = { (wfe::float32_t)windowWidth, (wfe::float32_t)windowHeight };
 
+    // Load the fonts
+#ifdef NDEBUG
+    io.Fonts->AddFontFromFileTTF("assets/fonts/Consola-Default.ttf", 15.f);
+    io.Fonts->AddFontFromFileTTF("assets/fonts/Consola-Bold.ttf", 15.f);
+    io.Fonts->AddFontFromFileTTF("assets/fonts/Consola-Italic.ttf", 15.f);
+#else
+    io.Fonts->AddFontFromFileTTF("../assets/fonts/Consola-Default.ttf", 15.f);
+    io.Fonts->AddFontFromFileTTF("../assets/fonts/Consola-Bold.ttf", 15.f);
+    io.Fonts->AddFontFromFileTTF("../assets/fonts/Consola-Italic.ttf", 15.f);
+#endif
+
+    // Set the style
     ImGui::StyleColorsDark();
+
+    auto& style = ImGui::GetStyle();
+
+    style.Colors[ImGuiCol_WindowBg]           = ImVec4{ .1000f, .1050f, .1100f, 1.f };
+
+    // Headers
+    style.Colors[ImGuiCol_Header]             = ImVec4{ .2000f, .2050f, .2100f, 1.f };
+    style.Colors[ImGuiCol_HeaderHovered]      = ImVec4{ .3000f, .3050f, .3100f, 1.f };
+    style.Colors[ImGuiCol_HeaderActive]       = ImVec4{ .1500f, .1505f, .1510f, 1.f };
+
+    // Buttons
+    style.Colors[ImGuiCol_Button]             = ImVec4{ .2000f, .2050f, .2100f, 1.f };
+    style.Colors[ImGuiCol_ButtonHovered]      = ImVec4{ .3000f, .3050f, .3100f, 1.f };
+    style.Colors[ImGuiCol_ButtonActive]       = ImVec4{ .1500f, .1505f, .1510f, 1.f };
+
+    // Frame BG
+    style.Colors[ImGuiCol_FrameBg]            = ImVec4{ .2000f, .2050f, .2100f, 1.f };
+    style.Colors[ImGuiCol_FrameBgHovered]     = ImVec4{ .3000f, .3050f, .3100f, 1.f };
+    style.Colors[ImGuiCol_FrameBgActive]      = ImVec4{ .1500f, .1505f, .1510f, 1.f };
+
+    // Tabs
+    style.Colors[ImGuiCol_Tab]                = ImVec4{ .1500f, .1505f, .1510f, 1.f };
+    style.Colors[ImGuiCol_TabHovered]         = ImVec4{ .3800f, .3805f, .3810f, 1.f };
+    style.Colors[ImGuiCol_TabActive]          = ImVec4{ .2800f, .2805f, .2810f, 1.f };
+    style.Colors[ImGuiCol_TabUnfocused]       = ImVec4{ .1500f, .1505f, .1510f, 1.f };
+    style.Colors[ImGuiCol_TabUnfocusedActive] = ImVec4{ .2000f, .2050f, .2100f, 1.f };
+
+    // Title
+    style.Colors[ImGuiCol_TitleBg]            = ImVec4{ .1500f, .1505f, .1510f, 1.f };
+    style.Colors[ImGuiCol_TitleBgActive]      = ImVec4{ .1700f, .1705f, .1710f, 1.f };
+    style.Colors[ImGuiCol_TitleBgCollapsed]   = ImVec4{ .1500f, .1505f, .1510f, 1.f };
 }
 static void ProcessEvent(const XEvent& event) {
     switch(event.type) {

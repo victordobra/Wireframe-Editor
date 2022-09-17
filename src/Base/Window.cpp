@@ -63,8 +63,6 @@ namespace wfe::editor {
         ImGui::SetWindowPos(ImGui::GetMainViewport()->WorkPos);
         ImGui::SetWindowSize(ImGui::GetMainViewport()->WorkSize);
 
-        ImGui::PopStyleVar(2);
-
         ImGuiID dockSpaceID = ImGui::GetID("DockSpace");
         ImGui::DockSpace(dockSpaceID, ImVec2(0.f, 0.f), ImGuiDockNodeFlags_None);
 
@@ -175,6 +173,8 @@ namespace wfe::editor {
         for(auto& windowType : *WindowType::windowTypes)
             if(windowType.val2.open)
                 windowType.val2.render();
+
+        ImGui::PopStyleVar(2);
 
         ImGui::End();
         ImGui::Render();
