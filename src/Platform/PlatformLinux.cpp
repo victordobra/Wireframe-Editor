@@ -332,8 +332,8 @@ static void ProcessEvent(const XEvent& event) {
         wfe::editor::AddEvent(keyEvent);
 
         // Get the inputted UTF8 string
-        wfe::char_t buffer[8];
-        Xutf8LookupString(editorPlatformInfo.inputContext, (XKeyPressedEvent*)&event.xkey, buffer, 8, nullptr, nullptr);
+        wfe::char_t buffer[32];
+        Xutf8LookupString(editorPlatformInfo.inputContext, (XKeyPressedEvent*)&event.xkey, buffer, 32, nullptr, nullptr);
 
         // Create the input char event
         wfe::editor::InputCharEventInfo* inputCharEventInfo = new wfe::editor::InputCharEventInfo();
