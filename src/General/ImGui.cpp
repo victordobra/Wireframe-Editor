@@ -3,7 +3,7 @@
 
 namespace wfe::editor {
     // Constants
-    const float32_t FONT_SIZE = 15.f;
+    const float32_t FONT_SIZE = 14.f;
 
     // Variables
     ImGuiContext* context;
@@ -40,9 +40,9 @@ namespace wfe::editor {
         boldFont   = io->Fonts->AddFontFromFileTTF("assets/fonts/Consola-Bold.ttf", FONT_SIZE);
         italicFont = io->Fonts->AddFontFromFileTTF("assets/fonts/Consola-Italic.ttf", FONT_SIZE);
 #else
-        normalFont = io->Fonts->AddFontFromFileTTF("..assets/fonts/Consola-Default.ttf", FONT_SIZE);
-        boldFont   = io->Fonts->AddFontFromFileTTF("..assets/fonts/Consola-Bold.ttf", FONT_SIZE);
-        italicFont = io->Fonts->AddFontFromFileTTF("..assets/fonts/Consola-Italic.ttf", FONT_SIZE);
+        normalFont = io->Fonts->AddFontFromFileTTF("../assets/fonts/Consola-Default.ttf", FONT_SIZE);
+        boldFont   = io->Fonts->AddFontFromFileTTF("../assets/fonts/Consola-Bold.ttf", FONT_SIZE);
+        italicFont = io->Fonts->AddFontFromFileTTF("../assets/fonts/Consola-Italic.ttf", FONT_SIZE);
 #endif
         
         io->FontDefault = normalFont;
