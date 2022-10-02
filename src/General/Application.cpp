@@ -1,5 +1,5 @@
 #include "General/Application.hpp"
-#include "Platform/Platform.hpp"
+#include "EditorPlatform/Platform.hpp"
 #include "ProjectInfo.hpp"
 
 namespace wfe::editor {

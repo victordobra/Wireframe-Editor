@@ -1,6 +1,6 @@
 #include "Base/Window.hpp"
 #include "General/Application.hpp"
-#include "Platform/Platform.hpp"
+#include "EditorPlatform/Platform.hpp"
 #include "Windows/EditorPropertiesWindow.hpp"
 #include "Windows/NewProjectWindow.hpp"
 #include "Linking/FunctionPtrs.hpp"

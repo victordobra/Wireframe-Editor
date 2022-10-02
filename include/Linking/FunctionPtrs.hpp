@@ -3,7 +3,7 @@
 #include "Core.hpp"
 #include "Base/Window.hpp"
 #include "General/Application.hpp"
-#include "Platform/Platform.hpp"
+#include "EditorPlatform/Platform.hpp"
 #include "Vulkan/Device.hpp"
 
 #if defined(PLATFORM_WINDOWS)

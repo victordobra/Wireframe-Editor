@@ -2,7 +2,7 @@
 
 #ifdef PLATFORM_LINUX
 
-#include "Platform/Platform.hpp"
+#include "EditorPlatform/Platform.hpp"
 #include "General/Application.hpp"
 #include "Core.hpp"
 #include "ProjectInfo.hpp"

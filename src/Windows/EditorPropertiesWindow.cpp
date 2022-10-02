@@ -1,5 +1,5 @@
 #include "Base/Window.hpp"
-#include "Platform/Platform.hpp"
+#include "EditorPlatform/Platform.hpp"
 
 namespace wfe::editor {
     // Constants
