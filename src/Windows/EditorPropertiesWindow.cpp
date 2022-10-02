@@ -1,5 +1,5 @@
 #include "Base/Window.hpp"
-#include "MainWindow/MainWindow.hpp"
+#include "Platform/Platform.hpp"
 
 namespace wfe::editor {
     // Constants
@@ -21,7 +21,7 @@ namespace wfe::editor {
             // Display the default template path dialog button
             if(ImGui::Button("...##defaultTemplateLocationButton")) {
                 bool8_t canceled;
-                string result = OpenFolderDialog(canceled);
+                string result = OpenFileDialog("Open Default Template Location", canceled, "", true);
                 if(!canceled)
                     defaultTemplateLocation = result;
             }
@@ -38,7 +38,7 @@ namespace wfe::editor {
             // Display the default project path dialog buffer
             if(ImGui::Button("...##defaultProjectLocationButton")) {
                 bool8_t canceled;
-                string result = OpenFolderDialog(canceled);
+                string result = OpenFileDialog("Open Default Project Location", canceled, "", true);
                 if(!canceled)
                     defaultProjectLocation = result;
             }
@@ -68,7 +68,7 @@ namespace wfe::editor {
                     ImGui::SameLine();
                     if(ImGui::Button(((string)"...##templateLocationButton" + ToString(i)).c_str())) {
                         bool8_t canceled;
-                        string result = OpenFolderDialog(canceled, defaultTemplateLocation);
+                        string result = OpenFileDialog("Open Template Location", canceled, defaultTemplateLocation, true);
                         if(!canceled)
                             templateLocations[i] = result;
                     }

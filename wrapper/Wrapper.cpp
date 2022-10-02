@@ -49,6 +49,26 @@ namespace wfe::editor {
         editorCallbacks.closeWorkspace();
     }
     
+    vector<Event> GetEvents() {
+        return editorCallbacks.getEvents();
+    }
+    vector<Event> GetEventsOfType(EventType type) {
+        return editorCallbacks.getEventsOfType(type);
+    }
+
+    void AddEvent(Event event) {
+        editorCallbacks.addEvent(event);
+    }
+
+    void CloseApplication(int32_t returnCode) {
+        editorCallbacks.closeApplication(returnCode);
+    }
+    bool8_t IsInsideEditor() {
+        if(editorCallbacks.isInsideEditor)
+            return editorCallbacks.isInsideEditor();
+        return false;
+    }
+
     size_t GetMainWindowWidth() {
         return editorCallbacks.getMainWindowWidth();
     }
@@ -56,18 +76,69 @@ namespace wfe::editor {
         return editorCallbacks.getMainWindowHeight();
     }
 
-    const string& GetMainWindowName() {
+    string GetMainWindowName() {
         return editorCallbacks.getMainWindowName();
     }
     void SetMainWindowName(const string& newName) {
         editorCallbacks.setMainWindowName(newName);
     }
 
-    string OpenFolderDialog(bool8_t& canceled, const string& startingLocation) {
-        return editorCallbacks.openFolderDialog(canceled, startingLocation);
+    void CreateImGui() {
+        editorCallbacks.createImGui();
     }
-    void CopyFolder(const string& srcFolder, const string& dstFolder) {
-        return editorCallbacks.copyFolder(srcFolder, dstFolder);
+    void DeleteImGui() {
+        editorCallbacks.deleteImGui();
+    }
+    void PorcessImGuiEvents() {
+        editorCallbacks.processImGuiEvents();
+    }
+
+    ImGuiContext* GetImGuiContext() {
+        return editorCallbacks.getImGuiContext();
+    }
+    ImGuiIO* GetImGuiIO() {
+        return editorCallbacks.getImGuiIO();
+    }
+    ImGuiStyle* GetImGuiStyle() {
+        return editorCallbacks.getImGuiStyle();
+    }
+
+    ImFont* GetImGuiNormalFont() {
+        return editorCallbacks.getImGuiNormalFont();
+    }
+    ImFont* GetImGuiBoldFont() {
+        return editorCallbacks.getImGuiBoldFont();
+    }
+    ImFont* GetImGuiItalicFont() {
+        return editorCallbacks.getImGuiItalicFont();
+    }
+
+    void CreatePlatform() {
+        editorCallbacks.createPlatform();
+    }
+    void DeletePlatform() {
+        editorCallbacks.deletePlatform();
+    }
+    void PollPlatformEvents() {
+        editorCallbacks.pollPlatformEvents();
+    }
+
+    PlatformInfo* GetPlatformInfo() {
+        return editorCallbacks.getPlatformInfo();
+    }
+
+    bool8_t LocationExists(const string& location) {
+        return editorCallbacks.locationExists(location);
+    }
+    void CopyFiles(const string& srcFile, const string& dstFile, bool8_t folders) {
+        editorCallbacks.copyFiles(srcFile, dstFile, folders);
+    }
+    string OpenFileDialog(const string& name, bool8_t& canceled, const string& startingLocation, bool8_t folders) {
+        return editorCallbacks.openFileDialog(name, canceled, startingLocation, folders);
+    }
+
+    VkResult CreatePlatformSurface(VkInstance instance, const VkAllocationCallbacks* pAllocator, VkSurfaceKHR* pSurface) {
+        return editorCallbacks.createPlatformSurface(instance, pAllocator, pSurface);
     }
 
     void CreateDevice() {
@@ -81,9 +152,7 @@ namespace wfe::editor {
         return editorCallbacks.getVulkanAllocator();
     }
     VkInstance GetVulkanInstance() {
-        if(editorCallbacks.getVulkanInstance)
-            return editorCallbacks.getVulkanInstance();
-        return (VkInstance)nullptr;
+        return editorCallbacks.getVulkanInstance();
     }
     VkPhysicalDevice GetPhysicalDevice() {
         return editorCallbacks.getPhysicalDevice();

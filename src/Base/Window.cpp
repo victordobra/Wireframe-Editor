@@ -1,5 +1,6 @@
 #include "Base/Window.hpp"
-#include "MainWindow/MainWindow.hpp"
+#include "General/Application.hpp"
+#include "Platform/Platform.hpp"
 #include "Windows/EditorPropertiesWindow.hpp"
 #include "Windows/NewProjectWindow.hpp"
 #include "Linking/FunctionPtrs.hpp"
@@ -77,7 +78,7 @@ namespace wfe::editor {
 
             // Open a dialog to get the project location
             bool8_t canceled;
-            string result = OpenFolderDialog(canceled, GetDefaultProjectLocation());
+            string result = OpenFileDialog("Open Project", canceled, GetDefaultProjectLocation(), true);
             
             if(!canceled) {
                 // Set the workspace dir
@@ -106,7 +107,7 @@ namespace wfe::editor {
 
                     // Open a dialog to get the project location
                     bool8_t canceled;
-                    string result = OpenFolderDialog(canceled, GetDefaultProjectLocation());
+                    string result = OpenFileDialog("Open Project", canceled, GetDefaultProjectLocation(), true);
                     
                     if(!canceled) {
                         // Set the workspace dir
@@ -253,9 +254,6 @@ namespace wfe::editor {
             // Set the pointer in the message vector to a nullptr, should modify this
             *((void**)&console::GetMessages() + 2) = nullptr;
             console::GetMessages() = messages;
-
-            // Set the pointer in the window's name to a nullptr, should also modify this
-            *((void**)&GetMainWindowName()) = nullptr;
 
             // Close and reopen the log file in case it was already closed
             console::OpenLogFile();

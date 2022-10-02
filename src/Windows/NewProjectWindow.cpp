@@ -1,7 +1,7 @@
 #include "Windows/NewProjectWindow.hpp"
 #include "Windows/EditorPropertiesWindow.hpp"
 #include "Base/Window.hpp"
-#include "MainWindow/MainWindow.hpp"
+#include "Platform/Platform.hpp"
 
 namespace wfe::editor {
     // Constants
@@ -23,7 +23,7 @@ namespace wfe::editor {
             if(ImGui::Button("...##projectPathButton")) {
                 // Open a dialog to get the project location
                 bool8_t canceled;
-                string result = OpenFolderDialog(canceled, GetDefaultProjectLocation());
+                string result = OpenFileDialog("Select Project Location", canceled, GetDefaultProjectLocation(), true);
                 
                 if(!canceled)
                     projectLocation = result;
@@ -51,14 +51,10 @@ namespace wfe::editor {
             // Display the create button
             if(ImGui::Button("Create Project")) {
                 // Copy from the template path to the project path
-                CopyFolder(templateStrings[templateIndex], projectLocation);
+                CopyFiles(templateStrings[templateIndex], projectLocation, true);
 
                 // Set the workspace dir
                 SetWorkspaceDir(projectLocation);
-
-                // Call the load callback, if it exists
-                if(GetLoadCallback())
-                    GetLoadCallback()();
                 
                 // Reset all project info
                 windowType.open = false;

@@ -15,14 +15,47 @@ namespace wfe::editor {
         callbacks.setWorkspaceDir = SetWorkspaceDir;
         callbacks.closeWorkspace = CloseWorkspace;
 
+        callbacks.getEvents = GetEvents;
+        callbacks.getEventsOfType = GetEventsOfType;
+
+        callbacks.addEvent = AddEvent;
+
+        callbacks.closeApplication = CloseApplication;
+        callbacks.isInsideEditor = IsInsideEditor;
+
         callbacks.getMainWindowWidth = GetMainWindowWidth;
         callbacks.getMainWindowHeight = GetMainWindowHeight;
 
         callbacks.getMainWindowName = GetMainWindowName;
         callbacks.setMainWindowName = SetMainWindowName;
+
+        callbacks.createImGui = CreateImGui;
+        callbacks.deleteImGui = DeleteImGui;
+        callbacks.processImGuiEvents = ProcessImGuiEvents;
+
+        callbacks.getImGuiContext = GetImGuiContext;
+        callbacks.getImGuiIO = GetImGuiIO;
+        callbacks.getImGuiStyle = GetImGuiStyle;
+
+        callbacks.getImGuiContext = GetImGuiContext;
+        callbacks.getImGuiIO = GetImGuiIO;
+        callbacks.getImGuiStyle = GetImGuiStyle;
+
+        callbacks.getImGuiNormalFont = GetImGuiNormalFont;
+        callbacks.getImGuiBoldFont = GetImGuiBoldFont;
+        callbacks.getImGuiItalicFont = GetImGuiItalicFont;
+
+        callbacks.createPlatform = CreatePlatform;
+        callbacks.deletePlatform = DeletePlatform;
+        callbacks.pollPlatformEvents = PollPlatformEvents;
         
-        callbacks.openFolderDialog = OpenFolderDialog;
-        callbacks.copyFolder = CopyFolder;
+        callbacks.getPlatformInfo = GetPlatformInfo;
+
+        callbacks.locationExists = LocationExists;
+        callbacks.copyFiles = CopyFiles;
+        callbacks.openFileDialog = OpenFileDialog;
+
+        callbacks.createPlatformSurface = CreatePlatformSurface;
 
         callbacks.createDevice = CreateDevice;
         callbacks.deleteDevice = DeleteDevice;

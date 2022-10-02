@@ -1,6 +1,6 @@
 #include "Vulkan/Device.hpp"
 #include "ProjectInfo.hpp"
-#include "MainWindow/MainWindow.hpp"
+#include "Platform/Platform.hpp"
 
 namespace wfe::editor {
     // Constants
@@ -8,15 +8,10 @@ namespace wfe::editor {
     const vector<const char_t*> deviceExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
 
     const vector<const char_t*> requiredExtensions = {
-        VK_KHR_SURFACE_EXTENSION_NAME
-#if defined(PLATFORM_WINDOWS)
-        , VK_KHR_WIN32_SURFACE_EXTENSION_NAME
-#elif defined(PLATFORM_LINUX)
-        , VK_KHR_XLIB_SURFACE_EXTENSION_NAME
-#endif
-#ifndef NDEBUG
-        , VK_EXT_DEBUG_UTILS_EXTENSION_NAME
-#endif
+        // General extensions
+        VK_KHR_SURFACE_EXTENSION_NAME,
+        WFE_VK_PLATFORM_EXTENSION,
+        VK_EXT_DEBUG_UTILS_EXTENSION_NAME
     };
     const vector<const char_t*> optionalExtensions = { };
 
@@ -263,10 +258,10 @@ namespace wfe::editor {
 
         appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
         appInfo.pNext = nullptr;
-        appInfo.pApplicationName = PROJECT_NAME;
-        appInfo.applicationVersion = VK_MAKE_VERSION(PROJECT_VERSION_MAJOR, PROJECT_VERSION_MINOR, PROJECT_VERSION_PATCH);
-        appInfo.pEngineName = PROJECT_NAME;
-        appInfo.engineVersion = VK_MAKE_VERSION(PROJECT_VERSION_MAJOR, PROJECT_VERSION_MINOR, PROJECT_VERSION_PATCH);
+        appInfo.pApplicationName = WFE_EDITOR_PROJECT_NAME;
+        appInfo.applicationVersion = VK_MAKE_VERSION(WFE_EDITOR_PROJECT_VERSION_MAJOR, WFE_EDITOR_PROJECT_VERSION_MINOR, WFE_EDITOR_PROJECT_VERSION_PATCH);
+        appInfo.pEngineName = WFE_EDITOR_PROJECT_NAME;
+        appInfo.engineVersion = VK_MAKE_VERSION(WFE_EDITOR_PROJECT_VERSION_MAJOR, WFE_EDITOR_PROJECT_VERSION_MINOR, WFE_EDITOR_PROJECT_VERSION_PATCH);
         appInfo.apiVersion = VK_API_VERSION_1_0;
 
         // Set the debug messenger create info for creating the instance
@@ -332,37 +327,10 @@ namespace wfe::editor {
         console::OutMessageFunction("Created Vulkan debug messenger successfully.");
     }
     static void CreateSurface() {
-#if defined(PLATFORM_WINDOWS)
-        // Set the surface create info
-        VkWin32SurfaceCreateInfoKHR createInfo;
-        
-        createInfo.sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR;
-        createInfo.pNext = nullptr;
-        createInfo.flags = 0;
-        createInfo.hwnd = GetMainWindowHandle();
-        createInfo.hinstance = GetWindowsInstance();
-
-        // Create the surface
-        auto result = vkCreateWin32SurfaceKHR(instance, &createInfo, allocator, &surface);
+        auto result = CreatePlatformSurface(instance, allocator, &surface);
         if(result != VK_SUCCESS)
             console::OutFatalError((string)"Failed to create surface! Error code: " + VkResultToString(result), 1);
-        console::OutMessageFunction("Created Vulkan window surface successfully.");
-#elif defined(PLATFORM_LINUX)
-        // Set the surface create info
-        VkXlibSurfaceCreateInfoKHR createInfo;
-        
-        createInfo.sType = VK_STRUCTURE_TYPE_XLIB_SURFACE_CREATE_INFO_KHR;
-        createInfo.pNext = nullptr;
-        createInfo.flags = 0;
-        createInfo.dpy = GetScreenConnection();
-        createInfo.window = GetWindowHandle();
-
-        // Create the surface
-        auto result = vkCreateXlibSurfaceKHR(instance, &createInfo, allocator, &surface);
-        if(result != VK_SUCCESS)
-            console::OutFatalError((string)"Failed to create surface! Error code: " + VkResultToString(result), 1);
-        console::OutMessageFunction("Created Vulkan window surface successfully.");
-#endif
+        console::OutMessageFunction("Created Vulkan surface successfully.");
     }
     static void PickPhysicalDevice() {
         // Enumerate all physical devices

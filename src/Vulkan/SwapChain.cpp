@@ -1,6 +1,6 @@
 #include "Vulkan/SwapChain.hpp"
 #include "Vulkan/Device.hpp"
-#include "MainWindow/MainWindow.hpp"
+#include "General/Application.hpp"
 
 #include <limits.h>
 
