@@ -272,6 +272,4 @@ namespace wfe::editor {
             SetMainWindowName("Wireframe Engine");
         }
     }
-
-    WFE_EDITOR_SET_LOAD_CALLBACK((LoadCallback)0xffffffff)
 }
