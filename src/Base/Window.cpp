@@ -14,6 +14,7 @@ namespace wfe::editor {
 
     constinit LoadCallback loadCallback;
     constinit SaveCallback saveCallback;
+    constinit CloseCallback closeCallback;
 
     string workspaceDir = "";
     vector<string> recentDirs;
@@ -193,6 +194,12 @@ namespace wfe::editor {
     void SetSaveCallback(SaveCallback newSaveCallback) {
         saveCallback = newSaveCallback;
     }
+    CloseCallback GetCloseCallback() {
+        return closeCallback;
+    }
+    void SetCloseCallback(CloseCallback newCloseCallback) {
+        closeCallback = newCloseCallback;
+    }
 
     string GetWorkspaceDir() {
         return workspaceDir;
@@ -244,6 +251,15 @@ namespace wfe::editor {
     }
     void CloseWorkspace() {
         if(workspaceDynamicLib) {
+            // Call the close callback, if it exists
+            if(closeCallback)
+                closeCallback();
+            
+            // Reset all callback values
+            loadCallback = nullptr;
+            saveCallback = nullptr;
+            closeCallback = nullptr;
+
             // Store all messages
             vector<console::Message> messages = console::GetMessages();
 

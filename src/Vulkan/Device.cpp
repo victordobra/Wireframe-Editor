@@ -10,8 +10,11 @@ namespace wfe::editor {
     const vector<const char_t*> requiredExtensions = {
         // General extensions
         VK_KHR_SURFACE_EXTENSION_NAME,
-        WFE_VK_PLATFORM_EXTENSION,
-        VK_EXT_DEBUG_UTILS_EXTENSION_NAME
+        WFE_VK_PLATFORM_EXTENSION
+
+#ifndef NDEBUG
+        , VK_EXT_DEBUG_UTILS_EXTENSION_NAME
+#endif
     };
     const vector<const char_t*> optionalExtensions = { };
 
@@ -24,7 +27,7 @@ namespace wfe::editor {
     bool8_t enableValidationLayers = true;
 #endif 
 
-    VkInstance instance = (VkInstance)0xffffffff;
+    VkInstance instance;
     vector<const char_t*> enabledExtensions;
     VkDebugUtilsMessengerEXT debugMessenger;
     VkSurfaceKHR surface;

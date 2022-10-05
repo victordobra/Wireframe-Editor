@@ -291,7 +291,7 @@ static void CreateWindow() {
     XStoreName(editorPlatformInfo.display, editorPlatformInfo.window, WFE_EDITOR_PROJECT_NAME);
 
     // Select the event masks
-    XSelectInput(editorPlatformInfo.display, editorPlatformInfo.window, KeyPressMask | KeyReleaseMask | ButtonPressMask | ButtonReleaseMask | PointerMotionMask | ButtonMotionMask | StructureNotifyMask | ConfigureNotify);
+    XSelectInput(editorPlatformInfo.display, editorPlatformInfo.window, KeyPressMask | KeyReleaseMask | ButtonPressMask | ButtonReleaseMask | PointerMotionMask | ButtonMotionMask | StructureNotifyMask);
 
     // Set the window closing atom
     editorPlatformInfo.deleteMessageAtom = XInternAtom(editorPlatformInfo.display, "WM_DELETE_WINDOW", false);
@@ -350,20 +350,25 @@ static void ProcessEvent(const XEvent& event) {
     }
     case KeyRelease:
     {
-        // Get the released ImGui key
-        ImGuiKey key = KeySymToImGuiKey(XkbKeycodeToKeysym(editorPlatformInfo.display, event.xkey.keycode, 0, 0));
+        XEvent nextEvent;
+        XPeekEvent(editorPlatformInfo.display, &nextEvent);
 
-        // Create the key event
-        wfe::editor::KeyEventInfo* keyEventInfo = new wfe::editor::KeyEventInfo();
-        keyEventInfo->pressed = false;
-        keyEventInfo->keyCode = key;
+        if(nextEvent.type != KeyPress || (nextEvent.type == KeyPress && nextEvent.xkey.keycode != event.xkey.keycode)) {
+            // Get the released ImGui key
+            ImGuiKey key = KeySymToImGuiKey(XkbKeycodeToKeysym(editorPlatformInfo.display, event.xkey.keycode, 0, 0));
 
-        wfe::editor::Event keyEvent;
-        keyEvent.eventType = wfe::editor::EVENT_TYPE_KEY;
-        keyEvent.eventInfo = keyEventInfo;
+            // Create the key event
+            wfe::editor::KeyEventInfo* keyEventInfo = new wfe::editor::KeyEventInfo();
+            keyEventInfo->pressed = false;
+            keyEventInfo->keyCode = key;
 
-        // Add the key event to the queue
-        wfe::editor::AddEvent(keyEvent);
+            wfe::editor::Event keyEvent;
+            keyEvent.eventType = wfe::editor::EVENT_TYPE_KEY;
+            keyEvent.eventInfo = keyEventInfo;
+
+            // Add the key event to the queue
+            wfe::editor::AddEvent(keyEvent);
+        }
 
         break;
     }

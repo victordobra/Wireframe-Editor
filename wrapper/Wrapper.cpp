@@ -38,6 +38,13 @@ namespace wfe::editor {
         if(editorCallbacks.setSaveCallback)
             editorCallbacks.setSaveCallback(newSaveCallback);
     }
+    CloseCallback GetCloseCallback() {
+        return editorCallbacks.getCloseCallback();
+    }
+    void SetCloseCallback(CloseCallback newCloseCallback) {
+        if(editorCallbacks.setCloseCallback)
+            editorCallbacks.setCloseCallback(newCloseCallback);
+    }
 
     string GetWorkspaceDir() {
         return editorCallbacks.getWorkspaceDir();

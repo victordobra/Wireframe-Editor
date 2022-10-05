@@ -10,6 +10,8 @@ namespace wfe::editor {
         callbacks.setLoadCallback = SetLoadCallback;
         callbacks.getSaveCallback = GetSaveCallback;
         callbacks.setSaveCallback = SetSaveCallback;
+        callbacks.getCloseCallback = GetCloseCallback;
+        callbacks.setCloseCallback = SetCloseCallback;
 
         callbacks.getWorkspaceDir = GetWorkspaceDir;
         callbacks.setWorkspaceDir = SetWorkspaceDir;

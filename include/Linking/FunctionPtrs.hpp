@@ -22,6 +22,8 @@ namespace wfe::editor {
     typedef void(*PtrFn_SetLoadCallback)(LoadCallback);
     typedef SaveCallback(*PtrFn_GetSaveCallback)();
     typedef void(*PtrFn_SetSaveCallback)(SaveCallback);
+    typedef CloseCallback(*PtrFn_GetCloseCallback)();
+    typedef void(*PtrFn_SetCloseCallback)(CloseCallback);
 
     typedef string(*PtrFn_GetWorkspaceDir)();
     typedef void(*PtrFn_SetWorkspaceDir)(const string&, bool8_t);
@@ -156,6 +158,8 @@ namespace wfe::editor {
         PtrFn_SetLoadCallback setLoadCallback;
         PtrFn_GetSaveCallback getSaveCallback;
         PtrFn_SetSaveCallback setSaveCallback;
+        PtrFn_GetCloseCallback getCloseCallback;
+        PtrFn_SetCloseCallback setCloseCallback;
 
         PtrFn_GetWorkspaceDir getWorkspaceDir;
         PtrFn_SetWorkspaceDir setWorkspaceDir;

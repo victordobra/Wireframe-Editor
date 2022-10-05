@@ -3,7 +3,7 @@
 
 namespace wfe::editor {
     // Constants
-    const float32_t FONT_SIZE = 14.f;
+    const float32_t FONT_SIZE = 13.f;
 
     // Variables
     ImGuiContext* context;
