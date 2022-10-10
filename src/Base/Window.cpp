@@ -20,6 +20,55 @@ namespace wfe::editor {
     vector<string> recentDirs;
     void* workspaceDynamicLib;
 
+    // Internal helper functions
+    static void LoadEditorInfo() {
+        // Load the ImGui ini settings
+        ImGui::LoadIniSettingsFromDisk((workspaceDir + "imgui.ini").c_str());
+
+        // Load the editor info        
+        FileInput fileInput(workspaceDir + "editor.info");
+
+        if(!fileInput)
+            return;
+        
+        // Get the number of window types
+        size_t windowTypeCount = 0;
+        fileInput.Read(windowTypeCount);
+
+        // Read every window type
+        for(size_t i = 0; i < windowTypeCount; ++i){
+            string windowTypeName = "";
+            size_t windowTypeOpen = 0;
+
+            fileInput.Read(windowTypeOpen).ReadLine(windowTypeName, windowTypeName.max_size());
+
+            // Check if it exists
+            auto* pair = WindowType::windowTypes->find(windowTypeName);
+            if(pair != WindowType::windowTypes->end()) {
+                // Set whether it is open
+                pair->val2.open = windowTypeOpen;
+            }
+        }
+
+        fileInput.Close();
+    }
+    static void SaveEditorInfo() {
+        // Save the ImGui ini settings
+        ImGui::SaveIniSettingsToDisk((workspaceDir + "imgui.ini").c_str());
+
+        // Save the editor info
+        FileOutput fileOutput(workspaceDir + "editor.info");
+
+        // Write the number of window types
+        fileOutput.Write(WindowType::windowTypes->size()).WriteBuffer('\n');
+
+        for(auto& pair : *WindowType::windowTypes) {
+            fileOutput.Write(pair.val2.name).WriteBuffer(' ').Write((size_t)pair.val2.open).WriteBuffer('\n');
+        }
+
+        fileOutput.Close();
+    }
+
     // Public functions
     void LoadWorkspace() {
         FileInput input("recent.info");
@@ -87,7 +136,10 @@ namespace wfe::editor {
             }
         }
         // Handle the save project shortcut
-        if(ImGui::IsKeyDown(ImGuiKey_LeftCtrl) && ImGui::IsKeyPressed(ImGuiKey_O, false)) { 
+        if(ImGui::IsKeyDown(ImGuiKey_LeftCtrl) && ImGui::IsKeyPressed(ImGuiKey_S, false)) { 
+            // Save the editor info
+            SaveEditorInfo();
+
             // Call the save callback, if it exists
             if(saveCallback)
                 saveCallback();
@@ -116,9 +168,12 @@ namespace wfe::editor {
                     }
                 }
                 if(ImGui::BeginMenu("Open recent")) {
-                    for(size_t i = 1; i < recentDirs.size(); ++i)
-                        if(ImGui::MenuItem(recentDirs[i].c_str(), nullptr)) {
-                            // TODO: Check if the path still exists
+                    for(size_t i = 0; i < recentDirs.size(); ++i)
+                        if(ImGui::MenuItem(recentDirs[i].c_str(), nullptr) && i) {
+                            // Check if the recent location still exists
+                            if(!LocationExists(recentDirs[i])) {
+                                ImGui::OpenPopup("Project loocation doesn't exist!");
+                            }
                             // TODO: Add saving safety check
 
                             // Put the recent dir at the top
@@ -143,9 +198,19 @@ namespace wfe::editor {
                     ImGui::EndMenu();
                 }
 
+                if(ImGui::BeginPopupModal("Project loocation doesn't exist!")) {
+                    ImGui::Text("The specified project does not exist. Removed from recents.");
+                    if(ImGui::Button("OK", ImVec2(-0.1f, 0.f)))
+                        ImGui::CloseCurrentPopup();
+                    ImGui::EndPopup();
+                }
+
                 ImGui::Separator();
 
                 if(ImGui::MenuItem("Save", "Ctrl+S")) {
+                    // Save the editor info
+                    SaveEditorInfo();
+
                     // Call the save callback, if it exists
                     if(saveCallback)
                         saveCallback();
@@ -246,6 +311,8 @@ namespace wfe::editor {
         // Call the load callback, if it exists
         if(loadCallback)
             loadCallback();
+        
+        LoadEditorInfo();
 
         console::OutMessageFunction((string)"Opened " + workspaceDir);
     }
