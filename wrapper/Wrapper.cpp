@@ -261,6 +261,10 @@ namespace wfe::editor {
         return editorCallbacks.getImGuiCommandBuffer();
     }
 
+    ImTextureID GetImGuiTexture(ImageID imageId) {
+        return editorCallbacks.getImGuiTexture(imageId);
+    }
+
     void CreateSwapChain() {
         editorCallbacks.createSwapChain();
     }

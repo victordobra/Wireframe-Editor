@@ -102,6 +102,8 @@ namespace wfe::editor {
         callbacks.getImGuiPipelineLayout = GetImGuiPipelineLayout;
         callbacks.getImGuiCommandBuffer = GetImGuiCommandBuffer;
 
+        callbacks.getImGuiTexture = GetImGuiTexture;
+
         callbacks.createSwapChain = CreateSwapChain;
         callbacks.deleteSwapChain = DeleteSwapChain;
         callbacks.recreateSwapChain = RecreateSwapChain;

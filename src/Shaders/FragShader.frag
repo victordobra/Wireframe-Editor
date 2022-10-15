@@ -5,8 +5,8 @@ layout(location = 1) in vec4 fragColor;
 
 layout(location = 0) out vec4 outColor;
 
-layout(set = 0, binding = 0) uniform sampler2D fontTexture;
+layout(set = 0, binding = 0) uniform sampler2D imageTexture;
 
 void main() {
-    outColor = fragColor * texture(fontTexture, fragUvCoord);
+    outColor = fragColor * texture(imageTexture, fragUvCoord);
 }

@@ -3,6 +3,9 @@
 #include "Vulkan/SwapChain.hpp"
 #include "imgui.hpp"
 
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
+
 namespace wfe::editor {
     struct PushConstants {
         float32_t scale[2];
@@ -30,7 +33,7 @@ namespace wfe::editor {
         fragColor = color;
     }
     */
-    const uint32_t vertShaderCode[] = {
+    const uint32_t VERT_SHADER_CODE[] = {
         0x07230203,0x00010000,0x0008000a,0x0000002c,0x00000000,0x00020011,0x00000001,0x0006000b,
         0x00000001,0x4c534c47,0x6474732e,0x3035342e,0x00000000,0x0003000e,0x00000000,0x00000001,
         0x000b000f,0x00000000,0x00000004,0x6e69616d,0x00000000,0x0000000d,0x00000012,0x00000025,
@@ -83,34 +86,41 @@ namespace wfe::editor {
 
     layout(location = 0) out vec4 outColor;
 
-    layout(set = 0, binding = 0) uniform sampler2D fontTexture;
+    layout(set = 0, binding = 0) uniform sampler2D imageTexture;
 
     void main() {
-        outColor = fragColor * texture(fontTexture, fragUvCoord);
+        outColor = fragColor * texture(imageTexture, fragUvCoord);
     }
     */
-    const uint32_t fragShaderCode[] = {
+    const uint32_t FRAG_SHADER_CODE[] = {
         0x07230203,0x00010000,0x0008000a,0x00000018,0x00000000,0x00020011,0x00000001,0x0006000b,
         0x00000001,0x4c534c47,0x6474732e,0x3035342e,0x00000000,0x0003000e,0x00000000,0x00000001,
         0x0008000f,0x00000004,0x00000004,0x6e69616d,0x00000000,0x00000009,0x0000000b,0x00000014,
         0x00030010,0x00000004,0x00000007,0x00030003,0x00000002,0x000001c2,0x00040005,0x00000004,
         0x6e69616d,0x00000000,0x00050005,0x00000009,0x4374756f,0x726f6c6f,0x00000000,0x00050005,
-        0x0000000b,0x67617266,0x6f6c6f43,0x00000072,0x00050005,0x00000010,0x746e6f66,0x74786554,
-        0x00657275,0x00050005,0x00000014,0x67617266,0x6f437655,0x0064726f,0x00040047,0x00000009,
-        0x0000001e,0x00000000,0x00040047,0x0000000b,0x0000001e,0x00000001,0x00040047,0x00000010,
-        0x00000022,0x00000000,0x00040047,0x00000010,0x00000021,0x00000000,0x00040047,0x00000014,
-        0x0000001e,0x00000000,0x00020013,0x00000002,0x00030021,0x00000003,0x00000002,0x00030016,
-        0x00000006,0x00000020,0x00040017,0x00000007,0x00000006,0x00000004,0x00040020,0x00000008,
-        0x00000003,0x00000007,0x0004003b,0x00000008,0x00000009,0x00000003,0x00040020,0x0000000a,
-        0x00000001,0x00000007,0x0004003b,0x0000000a,0x0000000b,0x00000001,0x00090019,0x0000000d,
-        0x00000006,0x00000001,0x00000000,0x00000000,0x00000000,0x00000001,0x00000000,0x0003001b,
-        0x0000000e,0x0000000d,0x00040020,0x0000000f,0x00000000,0x0000000e,0x0004003b,0x0000000f,
-        0x00000010,0x00000000,0x00040017,0x00000012,0x00000006,0x00000002,0x00040020,0x00000013,
-        0x00000001,0x00000012,0x0004003b,0x00000013,0x00000014,0x00000001,0x00050036,0x00000002,
-        0x00000004,0x00000000,0x00000003,0x000200f8,0x00000005,0x0004003d,0x00000007,0x0000000c,
-        0x0000000b,0x0004003d,0x0000000e,0x00000011,0x00000010,0x0004003d,0x00000012,0x00000015,
-        0x00000014,0x00050057,0x00000007,0x00000016,0x00000011,0x00000015,0x00050085,0x00000007,
-        0x00000017,0x0000000c,0x00000016,0x0003003e,0x00000009,0x00000017,0x000100fd,0x00010038
+        0x0000000b,0x67617266,0x6f6c6f43,0x00000072,0x00060005,0x00000010,0x67616d69,0x78655465,
+        0x65727574,0x00000000,0x00050005,0x00000014,0x67617266,0x6f437655,0x0064726f,0x00040047,
+        0x00000009,0x0000001e,0x00000000,0x00040047,0x0000000b,0x0000001e,0x00000001,0x00040047,
+        0x00000010,0x00000022,0x00000000,0x00040047,0x00000010,0x00000021,0x00000000,0x00040047,
+        0x00000014,0x0000001e,0x00000000,0x00020013,0x00000002,0x00030021,0x00000003,0x00000002,
+        0x00030016,0x00000006,0x00000020,0x00040017,0x00000007,0x00000006,0x00000004,0x00040020,
+        0x00000008,0x00000003,0x00000007,0x0004003b,0x00000008,0x00000009,0x00000003,0x00040020,
+        0x0000000a,0x00000001,0x00000007,0x0004003b,0x0000000a,0x0000000b,0x00000001,0x00090019,
+        0x0000000d,0x00000006,0x00000001,0x00000000,0x00000000,0x00000000,0x00000001,0x00000000,
+        0x0003001b,0x0000000e,0x0000000d,0x00040020,0x0000000f,0x00000000,0x0000000e,0x0004003b,
+        0x0000000f,0x00000010,0x00000000,0x00040017,0x00000012,0x00000006,0x00000002,0x00040020,
+        0x00000013,0x00000001,0x00000012,0x0004003b,0x00000013,0x00000014,0x00000001,0x00050036,
+        0x00000002,0x00000004,0x00000000,0x00000003,0x000200f8,0x00000005,0x0004003d,0x00000007,
+        0x0000000c,0x0000000b,0x0004003d,0x0000000e,0x00000011,0x00000010,0x0004003d,0x00000012,
+        0x00000015,0x00000014,0x00050057,0x00000007,0x00000016,0x00000011,0x00000015,0x00050085,
+        0x00000007,0x00000017,0x0000000c,0x00000016,0x0003003e,0x00000009,0x00000017,0x000100fd,
+        0x00010038
+    };
+
+    const vector<string> IMAGE_FILENAMES = {
+        "assets/images/File.png",
+        "assets/images/FolderEmpty.png",
+        "assets/images/FolderFull.png"
     };
 
     // Variables
@@ -122,10 +132,125 @@ namespace wfe::editor {
 
     VkDescriptorPool descriptorPool;
     VkDescriptorSetLayout fontDescriptorSetLayout;
-    VkDescriptorSet fontDescriptorSets[MAX_FRAMES_IN_FLIGHT];
-    VkImage fontImages[MAX_FRAMES_IN_FLIGHT];
-    VkDeviceMemory fontImageMemories[MAX_FRAMES_IN_FLIGHT];
-    VkImageView fontImageViews[MAX_FRAMES_IN_FLIGHT];
+    VkDescriptorSet fontDescriptorSet;
+    VkImage fontImage;
+    VkDeviceMemory fontImageMemory;
+    VkImageView fontImageView;
+    vector<VkDescriptorSet> imageDescriptorSets;
+    vector<VkImage> images;
+    vector<VkDeviceMemory> imageMemories;
+    vector<VkImageView> imageViews;
+
+    static void CreateImGuiImage(size_t width, size_t height, void* data, VkDescriptorSet descriptorSet, VkImage& image, VkDeviceMemory& imageMemory, VkImageView& imageView) {
+        // Create the staging buffer
+        VkDeviceSize imageSize = (VkDeviceSize)(width * height * 4);
+
+        VkBuffer stagingBuffer;
+        VkDeviceMemory stagingBufferMemory;
+
+        CreateBuffer(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT, stagingBuffer, stagingBufferMemory);
+
+        // Write to the staging buffer
+        void* mappedMemory;
+
+        VkResult mapResult = vkMapMemory(GetDevice(), stagingBufferMemory, 0, VK_WHOLE_SIZE, 0, &mappedMemory);
+
+        memcpy(mappedMemory, data, (size_t)imageSize);
+
+        VkMappedMemoryRange memoryRange;
+
+        memoryRange.sType = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
+        memoryRange.pNext = nullptr;
+        memoryRange.memory = stagingBufferMemory;
+        memoryRange.offset = 0;
+        memoryRange.size = imageSize;
+
+        vkFlushMappedMemoryRanges(GetDevice(), 1, &memoryRange);
+
+        vkUnmapMemory(GetDevice(), stagingBufferMemory);
+
+        // Set the image create info
+        VkImageCreateInfo imageInfo;
+
+        imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+        imageInfo.pNext = nullptr;
+        imageInfo.flags = 0;
+        imageInfo.imageType = VK_IMAGE_TYPE_2D;
+        imageInfo.format = VK_FORMAT_R8G8B8A8_UNORM;
+        imageInfo.extent = { (uint32_t)width, (uint32_t)height, 1 };
+        imageInfo.mipLevels = 1;
+        imageInfo.arrayLayers = 1;
+        imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
+        imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
+        imageInfo.usage = VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
+        imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+        imageInfo.queueFamilyIndexCount = 0;
+        imageInfo.pQueueFamilyIndices = nullptr;
+        imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+
+        // Create the image        
+        CreateImage(imageInfo, VK_MEMORY_HEAP_DEVICE_LOCAL_BIT, image, imageMemory);
+
+        // Set the image view create info
+        VkImageViewCreateInfo imageViewInfo;
+
+        imageViewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+        imageViewInfo.pNext = nullptr;
+        imageViewInfo.flags = 0;
+        imageViewInfo.image = image;
+        imageViewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+        imageViewInfo.format = VK_FORMAT_R8G8B8A8_UNORM;
+        imageViewInfo.components = { VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY };
+        
+        imageViewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        imageViewInfo.subresourceRange.baseMipLevel = 0;
+        imageViewInfo.subresourceRange.levelCount = 1;
+        imageViewInfo.subresourceRange.baseArrayLayer = 0;
+        imageViewInfo.subresourceRange.layerCount = 1;
+
+        // Create the image view
+        auto result = vkCreateImageView(GetDevice(), &imageViewInfo, GetVulkanAllocator(), &imageView);
+        if(result != VK_SUCCESS)
+            console::OutFatalError((string)"Failed to create image view! Error code: " + VkResultToString(result), 1);
+
+        // Begin single time commands
+        VkCommandBuffer commandBuffer = BeginSingleTimeCommands();
+
+        // Copy to the image
+        TransitionImageLayout(image, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_FORMAT_R8G8B8A8_UNORM, commandBuffer);
+        CopyBufferToImage(stagingBuffer, image, (uint32_t)width, (uint32_t)height, 1, commandBuffer);
+        TransitionImageLayout(image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_FORMAT_R8G8B8A8_UNORM, commandBuffer);
+
+        // End single time commands
+        EndSingleTimeCommands(commandBuffer);
+
+        // Set the descriptor image info
+        VkDescriptorImageInfo descriptorImageInfo;
+
+        descriptorImageInfo.sampler = sampler;
+        descriptorImageInfo.imageView = imageView;
+        descriptorImageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+        // Set the descriptor set write info
+        VkWriteDescriptorSet write;
+
+        write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        write.pNext = nullptr;
+        write.dstSet = descriptorSet;
+        write.dstBinding = 0;
+        write.dstArrayElement = 0;
+        write.descriptorCount = 1;
+        write.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+        write.pImageInfo = &descriptorImageInfo;
+        write.pBufferInfo = nullptr;
+        
+        // Update the descriptor sets
+        vkUpdateDescriptorSets(GetDevice(), 1, &write, 0, nullptr);
+
+        // Delete the staging buffer
+        vkDestroyBuffer(GetDevice(), stagingBuffer, GetVulkanAllocator());
+        vkFreeMemory(GetDevice(), stagingBufferMemory, GetVulkanAllocator());
+    }
 
     static void ConfigureImGuiBackend() {
         ImGui::GetIO().BackendRendererName = "WFE-Vulkan-Renderer";
@@ -161,7 +286,7 @@ namespace wfe::editor {
     }
     static void CreateDescriptorPool() {
         // Set the descriptor pool size
-        VkDescriptorPoolSize poolSize = { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_FRAMES_IN_FLIGHT };
+        VkDescriptorPoolSize poolSize = { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, (uint32_t)(1 + IMAGE_FILENAMES.size()) };
 
         // Set the descriptor pool create info
         VkDescriptorPoolCreateInfo createInfo;
@@ -169,7 +294,7 @@ namespace wfe::editor {
         createInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
         createInfo.pNext = nullptr;
         createInfo.flags = 0;
-        createInfo.maxSets = MAX_FRAMES_IN_FLIGHT;
+        createInfo.maxSets = (VkDeviceSize)(1 + IMAGE_FILENAMES.size());
         createInfo.poolSizeCount = 1;
         createInfo.pPoolSizes = &poolSize;
 
@@ -212,137 +337,57 @@ namespace wfe::editor {
         allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
         allocInfo.pNext = nullptr;
         allocInfo.descriptorPool = descriptorPool;
-        allocInfo.descriptorSetCount = 2;
+        allocInfo.descriptorSetCount = 1;
         allocInfo.pSetLayouts = layouts;
 
-        // Allocate the descriptor sets
-        result = vkAllocateDescriptorSets(GetDevice(), &allocInfo, fontDescriptorSets);
+        // Allocate the font descriptor set
+        result = vkAllocateDescriptorSets(GetDevice(), &allocInfo, &fontDescriptorSet);
         if(result != VK_SUCCESS)
-            console::OutFatalError((string)"Failed to allocate descriptor sets! Error code: " + VkResultToString(result), 1);
-    }
-    static void CreateFontImages() {
-        // Get the font texture data
-        int32_t width, height, pixelSize;
-        uint8_t* data;
-        ImGui::GetIO().Fonts->GetTexDataAsRGBA32(&data, &width, &height, &pixelSize);
+            console::OutFatalError((string)"Failed to allocate descriptor set! Error code: " + VkResultToString(result), 1);
 
-        // Create the staging buffer
-        VkDeviceSize imageSize = (VkDeviceSize)(width * height * pixelSize);
+        // Allocate every other descriptor set
+        imageDescriptorSets.resize(IMAGE_FILENAMES.size());
 
-        VkBuffer stagingBuffer;
-        VkDeviceMemory stagingBufferMemory;
-
-        CreateBuffer(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT, stagingBuffer, stagingBufferMemory);
-
-        // Write the the staging buffer
-        void* mappedMemory;
-
-        vkMapMemory(GetDevice(), stagingBufferMemory, 0, imageSize, 0, &mappedMemory);
-
-        memcpy(mappedMemory, data, (size_t)imageSize);
-
-        VkMappedMemoryRange memoryRange;
-
-        memoryRange.sType = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
-        memoryRange.pNext = nullptr;
-        memoryRange.memory = stagingBufferMemory;
-        memoryRange.offset = 0;
-        memoryRange.size = imageSize;
-
-        vkFlushMappedMemoryRanges(GetDevice(), 1, &memoryRange);
-
-        vkUnmapMemory(GetDevice(), stagingBufferMemory);
-
-        // Set the image create info
-        VkImageCreateInfo imageInfo;
-
-        imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-        imageInfo.pNext = nullptr;
-        imageInfo.flags = 0;
-        imageInfo.imageType = VK_IMAGE_TYPE_2D;
-        imageInfo.format = VK_FORMAT_R8G8B8A8_UNORM;
-        imageInfo.extent = { (uint32_t)width, (uint32_t)height, 1 };
-        imageInfo.mipLevels = 1;
-        imageInfo.arrayLayers = 1;
-        imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
-        imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
-        imageInfo.usage = VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
-        imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-        imageInfo.queueFamilyIndexCount = 0;
-        imageInfo.pQueueFamilyIndices = nullptr;
-        imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-
-        // Set the image view create info without the image; it will be set in the for loop
-        VkImageViewCreateInfo imageViewInfo;
-
-        imageViewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-        imageViewInfo.pNext = nullptr;
-        imageViewInfo.flags = 0;
-        imageViewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-        imageViewInfo.format = VK_FORMAT_R8G8B8A8_UNORM;
-        imageViewInfo.components = { VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY };
-        
-        imageViewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-        imageViewInfo.subresourceRange.baseMipLevel = 0;
-        imageViewInfo.subresourceRange.levelCount = 1;
-        imageViewInfo.subresourceRange.baseArrayLayer = 0;
-        imageViewInfo.subresourceRange.layerCount = 1;
-
-        // Begin single time commands
-        VkCommandBuffer commandBuffer = BeginSingleTimeCommands();
-
-        // Create every image
-        for(size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; ++i) {
-            // Create the image
-            CreateImage(imageInfo, VK_MEMORY_HEAP_DEVICE_LOCAL_BIT, fontImages[i], fontImageMemories[i]);
-
-            // Create the image view
-            imageViewInfo.image = fontImages[i];
-
-            auto result = vkCreateImageView(GetDevice(), &imageViewInfo, GetVulkanAllocator(), fontImageViews + i);
+        for(VkDescriptorSet& descriptorSet : imageDescriptorSets) {
+            result = vkAllocateDescriptorSets(GetDevice(), &allocInfo, &descriptorSet);
             if(result != VK_SUCCESS)
-                console::OutFatalError((string)"Failed to create image view! Error code: " + VkResultToString(result), 1);
-            
-            // Copy to the image
-            TransitionImageLayout(fontImages[i], VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_FORMAT_R8G8B8A8_UNORM, commandBuffer);
-            CopyBufferToImage(stagingBuffer, fontImages[i], (uint32_t)width, (uint32_t)height, 1, commandBuffer);
-            TransitionImageLayout(fontImages[i], VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_FORMAT_R8G8B8A8_UNORM, commandBuffer);
+                console::OutFatalError((string)"Failed to allocate descriptor set! Error code: " + VkResultToString(result), 1);
         }
+    }
+    static void CreateImGuiImages() {
+        // Get the font texture data
+        int32_t width, height;
+        void* data;
+        ImGui::GetIO().Fonts->GetTexDataAsRGBA32((uint8_t**)&data, &width, &height);
 
-        // End single time commands
-        EndSingleTimeCommands(commandBuffer);
+        // Create the font image
+        CreateImGuiImage((size_t)width, (size_t)height, data, fontDescriptorSet, fontImage, fontImageMemory, fontImageView);
 
-        // Set the descriptor image infos
-        VkDescriptorImageInfo descriptorImageInfos[MAX_FRAMES_IN_FLIGHT];
+        // Set the font texture ID
+        ImGui::GetIO().Fonts->SetTexID((ImTextureID)fontDescriptorSet);
 
-        for(size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; ++i) {
-            descriptorImageInfos[i].sampler = sampler;
-            descriptorImageInfos[i].imageView = fontImageViews[i];
-            descriptorImageInfos[i].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        // Load every other image
+        images.resize(IMAGE_FILENAMES.size());
+        imageMemories.resize(IMAGE_FILENAMES.size());
+        imageViews.resize(IMAGE_FILENAMES.size());
+
+        for(size_t i = 0; i < IMAGE_FILENAMES.size(); ++i) {
+            // Get the filename
+            string filename = IMAGE_FILENAMES[i];
+#ifndef NDEBUG
+            filename = (string)"../" + filename;
+#endif
+
+            // Load the image
+            int32_t channels;
+            data = stbi_load(filename.c_str(), &width, &height, &channels, STBI_rgb_alpha);
+
+            // Create the image
+            CreateImGuiImage((size_t)width, (size_t)height, data, imageDescriptorSets[i], images[i], imageMemories[i], imageViews[i]);
+
+            // Delete the data
+            free(data);
         }
-
-        // Set the descriptor set write infos
-        VkWriteDescriptorSet writes[MAX_FRAMES_IN_FLIGHT];
-
-        for(size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; ++i) {
-            writes[i].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-            writes[i].pNext = nullptr;
-            writes[i].dstSet = fontDescriptorSets[i];
-            writes[i].dstBinding = 0;
-            writes[i].dstArrayElement = 0;
-            writes[i].descriptorCount = 1;
-            writes[i].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-            writes[i].pImageInfo = descriptorImageInfos + i;
-            writes[i].pBufferInfo = nullptr;
-            writes[i].pTexelBufferView = nullptr;
-        }
-        
-        // Update the descriptor sets
-        vkUpdateDescriptorSets(GetDevice(), MAX_FRAMES_IN_FLIGHT, writes, 0, nullptr);
-
-        // Delete the staging buffer
-        vkDestroyBuffer(GetDevice(), stagingBuffer, GetVulkanAllocator());
-        vkFreeMemory(GetDevice(), stagingBufferMemory, GetVulkanAllocator());
     }
     static void CreatePipelineLayout() {
         // Set the push constant range
@@ -374,8 +419,8 @@ namespace wfe::editor {
         vertShaderInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
         vertShaderInfo.pNext = nullptr;
         vertShaderInfo.flags = 0;
-        vertShaderInfo.codeSize = sizeof(vertShaderCode);
-        vertShaderInfo.pCode = vertShaderCode;
+        vertShaderInfo.codeSize = sizeof(VERT_SHADER_CODE);
+        vertShaderInfo.pCode = VERT_SHADER_CODE;
 
         // Set the fragment shader module create info
         VkShaderModuleCreateInfo fragShaderInfo;
@@ -383,8 +428,8 @@ namespace wfe::editor {
         fragShaderInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
         fragShaderInfo.pNext = nullptr;
         fragShaderInfo.flags = 0;
-        fragShaderInfo.codeSize = sizeof(fragShaderCode);
-        fragShaderInfo.pCode = fragShaderCode;
+        fragShaderInfo.codeSize = sizeof(FRAG_SHADER_CODE);
+        fragShaderInfo.pCode = FRAG_SHADER_CODE;
 
         // Create the vertex shader module
         auto result = vkCreateShaderModule(GetDevice(), &vertShaderInfo, GetVulkanAllocator(), &vertShaderModule);
@@ -595,7 +640,7 @@ namespace wfe::editor {
         CreateSampler();
         CreateDescriptorPool();
         CreateFontDescriptorSets();
-        CreateFontImages();
+        CreateImGuiImages();
         CreatePipelineLayout();
         CreateShaderModules();
         CreateGraphicsPipeline();
@@ -609,10 +654,14 @@ namespace wfe::editor {
         vkDestroyShaderModule(GetDevice(), fragShaderModule, GetVulkanAllocator());
         vkDestroyPipelineLayout(GetDevice(), layout, GetVulkanAllocator());
 
-        for(size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; ++i) {
-            vkDestroyImage(GetDevice(), fontImages[i], GetVulkanAllocator());
-            vkFreeMemory(GetDevice(), fontImageMemories[i], GetVulkanAllocator());
-            vkDestroyImageView(GetDevice(), fontImageViews[i], GetVulkanAllocator());
+        vkDestroyImage(GetDevice(), fontImage, GetVulkanAllocator());
+        vkFreeMemory(GetDevice(), fontImageMemory, GetVulkanAllocator());
+        vkDestroyImageView(GetDevice(), fontImageView, GetVulkanAllocator());
+
+        for(size_t i = 0; i < images.size(); ++i) {
+            vkDestroyImage(GetDevice(), images[i], GetVulkanAllocator());
+            vkFreeMemory(GetDevice(), imageMemories[i], GetVulkanAllocator());
+            vkDestroyImageView(GetDevice(), imageViews[i], GetVulkanAllocator());
         } 
 
         vkDestroyDescriptorSetLayout(GetDevice(), fontDescriptorSetLayout, GetVulkanAllocator());
@@ -733,9 +782,6 @@ namespace wfe::editor {
 
         vkCmdPushConstants(commandBuffer, layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(PushConstants), &pushConstants);
 
-        // Bind the font descriptor set
-        vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, layout, 0, 1, fontDescriptorSets + GetCurrentFrame(), 0, nullptr);
-
         VkDeviceSize vertOffset = 0, indOffset = 0;
         for(size_t i = 0; i < drawData->CmdListsCount; ++i) {
             ImDrawList* cmdList = drawData->CmdLists[i];
@@ -761,7 +807,9 @@ namespace wfe::editor {
                     vkCmdPushConstants(commandBuffer, layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(PushConstants), &pushConstants);
 
                     // Bind the font descriptor set
-                    vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, layout, 0, 1, fontDescriptorSets + GetCurrentFrame(), 0, nullptr);
+                    VkDescriptorSet descriptorSet = (VkDescriptorSet)drawCmd->TextureId;
+
+                    vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, layout, 0, 1, &descriptorSet, 0, nullptr);
 
                     // Bind the vertex and index buffers
                     VkDeviceSize offset = 0;
@@ -810,5 +858,9 @@ namespace wfe::editor {
     }
     VkCommandBuffer GetImGuiCommandBuffer() {
         return commandBuffer;
+    }
+
+    ImTextureID GetImGuiTexture(ImageID imageId) {
+        return (ImTextureID)imageDescriptorSets[imageId];
     }
 }

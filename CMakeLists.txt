@@ -42,7 +42,7 @@ target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_20)
 message(STATUS "Executable created successfully.")
 
 # Add the include directories
-target_include_directories(${PROJECT_NAME} PUBLIC ${PROJECT_SOURCE_DIR}/include ${PROJECT_SOURCE_DIR}/info ${PROJECT_SOURCE_DIR}/src ${PROJECT_SOURCE_DIR}/external/ImGui/include ${PROJECT_SOURCE_DIR}/external/Core/include ${PROJECT_SOURCE_DIR}/external/Vulkan/include)
+target_include_directories(${PROJECT_NAME} PUBLIC ${PROJECT_SOURCE_DIR}/include ${PROJECT_SOURCE_DIR}/info ${PROJECT_SOURCE_DIR}/src ${PROJECT_SOURCE_DIR}/external/ImGui/include ${PROJECT_SOURCE_DIR}/external/Core/include ${PROJECT_SOURCE_DIR}/external/stb/include ${PROJECT_SOURCE_DIR}/external/Vulkan/include)
 message(STATUS "Include directories added.")
 
 # Add the link directories and link the libraries
@@ -67,7 +67,7 @@ target_compile_options(Wireframe-Editor PUBLIC -fPIC)
 message(STATUS "Wrapper library created successfully")
 
 # Add the include directories
-target_include_directories(Wireframe-Editor PUBLIC ${PROJECT_SOURCE_DIR}/include ${PROJECT_SOURCE_DIR}/info ${PROJECT_SOURCE_DIR}/src ${PROJECT_SOURCE_DIR}/external/ImGui/include ${PROJECT_SOURCE_DIR}/external/Core/include ${PROJECT_SOURCE_DIR}/external/Vulkan/include)
+target_include_directories(Wireframe-Editor PUBLIC ${PROJECT_SOURCE_DIR}/include ${PROJECT_SOURCE_DIR}/info ${PROJECT_SOURCE_DIR}/src ${PROJECT_SOURCE_DIR}/external/ImGui/include ${PROJECT_SOURCE_DIR}/external/Core/include ${PROJECT_SOURCE_DIR}/external/stb/include ${PROJECT_SOURCE_DIR}/external/Vulkan/include)
 message(STATUS "Include directories added")
 
 set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})
