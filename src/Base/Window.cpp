@@ -63,7 +63,7 @@ namespace wfe::editor {
         fileOutput.Write(WindowType::windowTypes->size()).WriteBuffer('\n');
 
         for(auto& pair : *WindowType::windowTypes) {
-            fileOutput.Write(pair.val2.name).WriteBuffer(' ').Write((size_t)pair.val2.open).WriteBuffer('\n');
+            fileOutput.Write((size_t)pair.val2.open).WriteBuffer(' ').Write(pair.val2.name).WriteBuffer('\n');
         }
 
         fileOutput.Close();
