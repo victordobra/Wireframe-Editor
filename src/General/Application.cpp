@@ -172,7 +172,7 @@ namespace wfe::editor {
 
         Event event;
         event.eventType = EVENT_TYPE_EXIT;
-        event.eventInfo = &exitEventInfo;
+        event.eventInfo = exitEventInfo;
 
         // Add the event to the queue
         AddEvent(event);
